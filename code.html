@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WindUI Lua → HTML Runner</title>
+  <style>
+    :root{--bg:#0b1220;--card:#111827;--muted:#9ca3af;--fg:#e5e7eb;}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#0b1220,#0b1220 40%,#0e1626);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji"}
+    .wrap{display:grid;grid-template-columns:380px 1fr;gap:16px;height:100%;padding:16px;box-sizing:border-box}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column}
+    .card h2{margin:0;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px;letter-spacing:.4px;color:#cbd5e1}
+    .card .body{padding:12px;gap:10px;display:flex;flex-direction:column}
+    .row{display:flex;gap:8px;align-items:center}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#1f2937;color:#e5e7eb;cursor:pointer}
+    .btn:active{transform:translateY(1px)}
+    .input{width:100%;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#0f172a;color:#e5e7eb}
+    .editor{flex:1;resize:none;min-height:160px}
+    #stage{position:relative;background:#0a0f1a;border-radius:12px;margin:0;overflow:auto}
+    #stage *{box-sizing:border-box}
+    .muted{color:var(--muted);font-size:12px}
+    .badge{font-size:11px;padding:2px 6px;border-radius:999px;background:#0b5;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h2>⚡ WindUI Lua → HTML <span class="badge">POC</span></h2>
+    <div class="body">
+      <div class="row">
+        <input id="file" class="input" type="file" accept=".lua" />
+        <button id="run" class="btn">Chạy Lua</button>
+      </div>
+      <textarea id="code" class="input editor" spellcheck="false" placeholder="Dán Lua ở đây hoặc chọn file .lua"></textarea>
+      <div class="muted">Có sẵn API mô phỏng Roblox: <code>Instance.new</code>, <code>UDim2.new</code>, <code>Color3.fromHex</code>, <code>TweenService:Create</code>, <code>Set(el, props)</code>, <code>Add(parent, child)</code>, <code>Mount(el)</code>.</div>
+    </div>
+  </div>
+
+  <div class="card" style="grid-row:span 2;">
+    <h2>🪟 Stage (HTML Render)</h2>
+    <div class="body" style="height:100%;padding:10px">
+      <div id="stage" style="height:100%;min-height:420px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📎 Lua demo</h2>
+    <div class="body">
+      <textarea class="input editor" id="demo" readonly>
+-- Demo WindUI (subset) chạy trong trình duyệt
+local root = Instance.new("Frame")
+Set(root, {
+  Size = UDim2.new(0, 380, 0, 220),
+  Position = UDim2.new(0, 16, 0, 16),
+  BackgroundColor3 = Color3.fromHex("#111827"),
+  style = { padding = "12px", borderRadius = "12px" }
+})
+
+local title = Instance.new("TextLabel")
+Set(title, {
+  Text = "WindUI x Lua (web)",
+  style = { fontWeight = "600", fontSize = "16px", display = "block", marginBottom = "8px" }
+})
+Add(root, title)
+
+local btn = Instance.new("TextButton")
+Set(btn, {
+  Text = "Click to tween",
+  style = { padding = "8px 10px", border = "1px solid rgba(255,255,255,.1)", borderRadius = "10px", background = "#1f2937", cursor = "pointer" }
+})
+Add(root, btn)
+
+btn:addEventListener("click", function()
+  TweenService:Create(root, {Time=0.4}, {Transparency = 0.4}):Play()
+  TweenService:Create(root, {Time=0.4}, {Transparency = 0.0}):Play()
+end)
+
+Mount(root)
+      </textarea>
+    </div>
+  </div>
+</div>
+
+<script src="build/fengari-web.bundle.js"></script>
+<script src="build/fengari-interop.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+
+  // ===== WindUI JS =====
+  const Color3 = {
+    fromRGB:(r,g,b)=>({ toCss:()=>`rgb(${r|0}, ${g|0}, ${b|0})` }),
+    fromHex:(hex)=>{
+      hex=(hex||'').replace(/^#/,''); 
+      if(hex.length===3) hex=[...hex].map(x=>x+x).join('');
+      const n=parseInt(hex,16); 
+      return Color3.fromRGB((n>>16)&255,(n>>8)&255,n&255);
+    }
+  };
+
+  class UDim2 {
+    constructor(xs=0,xo=0,ys=0,yo=0){ this.X={Scale:xs,Offset:xo}; this.Y={Scale:ys,Offset:yo}; }
+    static fromOffset(x,y){ return new UDim2(0,x,0,y); }
+    static fromScale(x,y){ return new UDim2(x,0,y,0); }
+  }
+
+  function toCalc(scale, offset){ return `calc(${(scale*100)}% + ${offset}px)`; }
+  function applyUDim2(el, prop, u){ if(!(u instanceof UDim2)) return; 
+    if(prop==='Position'){ el.style.position='absolute'; el.style.left=toCalc(u.X.Scale,u.X.Offset); el.style.top=toCalc(u.Y.Scale,u.Y.Offset);} 
+    else if(prop==='Size'){ el.style.width=toCalc(u.X.Scale,u.X.Offset); el.style.height=toCalc(u.Y.Scale,u.Y.Offset);} 
+  }
+
+  const CLASS_MAP = { Frame:'div', TextLabel:'span', TextButton:'button', ImageLabel:'img', ScreenGui:'div' };
+  function InstanceNew(className){ const tag=CLASS_MAP[className]||'div'; const el=document.createElement(tag); el.__rbxClass=className; return el; }
+
+  function applyProps(el, props={}){ for(const [k,v] of Object.entries(props)){
+    if(k==='style' && v && typeof v==='object'){ Object.assign(el.style,v); continue; }
+    if(k==='Size'||k==='Position'){ applyUDim2(el,k,v); continue; }
+    if(k==='BackgroundColor3'){ el.style.background=v?.toCss?v.toCss():v; continue; }
+    if(k==='TextColor3'){ el.style.color=v?.toCss?v.toCss():v; continue; }
+    if(k==='Text'){ el.textContent=v??''; continue; }
+    if(k==='Transparency'){ el.style.opacity = 1-(v??0); continue; }
+    if(k in el){ try{el[k]=v}catch{} } else { el.setAttribute(k,v); }
+  } }
+
+  const TweenService = {
+    Create(el, info={Time:.25,Easing:'ease'}, goal={}) {
+      const duration=(info.Time??.25)*1000; const easing=info.Easing??'ease';
+      const start={}; const end={};
+      for(const [k,v] of Object.entries(goal)){
+        if(k==='Size'||k==='Position'){ applyUDim2(el,k,v); continue; }
+        if(k==='BackgroundColor3'){ end.background=v?.toCss?v.toCss():v; continue; }
+        if(k==='TextColor3'){ end.color=v?.toCss?v.toCss():v; continue; }
+        if(k==='Transparency'){ end.opacity = 1-(v??0); continue; }
+        if(k==='Rotation'){ end.transform=`rotate(${v??0}deg)`; continue; }
+        if(k in el.style) end[k]=v;
+      }
+      for(const k in end) start[k]=getComputedStyle(el)[k];
+      if(el.animate){ const anim=el.animate([start,end],{duration,easing,fill:'forwards'}); return {Play:()=>anim.play(),Cancel:()=>anim.cancel()}; }
+      Object.assign(el.style,end); return {Play:()=>{},Cancel:()=>{}};
+    }
+  };
+
+  function Mount(el){ stage.replaceChildren(el); return el; }
+  function Add(p,c){ p.appendChild(c); return c; }
+  function Set(el,props){ applyProps(el,props); return el; }
+
+  window.Wind = { Color3, UDim2, InstanceNew, TweenService, Mount, Add, Set };
+
+  // ===== Lua bootstrap =====
+  const { lua,lauxlib,lualib } = fengari;
+  const interop = fengari_interop;
+
+  function runLua(luaCode){
+    const L = lauxlib.luaL_newstate();
+    lualib.luaL_openlibs(L);
+    interop.luaopen_js(L);
+
+    const prelude = `
+      local js = require('js')
+      local Wind = js.global.Wind
+      Instance = {}
+      function Instance.new(className) return Wind.InstanceNew(className) end
+      UDim2 = {}
+      function UDim2.new(xs,xo,ys,yo) return Wind.UDim2(xs or 0,xo or 0,ys or 0,yo or 0) end
+      function UDim2.fromOffset(x,y) return Wind.UDim2.fromOffset(x or 0,y or 0) end
+      function UDim2.fromScale(x,y) return Wind.UDim2.fromScale(x or 0,y or 0) end
+      Color3 = {}
+      function Color3.fromHex(hex) return Wind.Color3.fromHex(hex) end
+      function Color3.fromRGB(r,g,b) return Wind.Color3.fromRGB(r,g,b) end
+      TweenService = {}
+      function TweenService:Create(el, info, goal) return Wind.TweenService:Create(el, info, goal) end
+      function Mount(el) return Wind.Mount(el) end
+      function Add(p,c) return Wind.Add(p,c) end
+      function Set(el,props) return Wind.Set(el,props) end
+    `;
+
+    const full = prelude + "\n" + luaCode;
+    const status = lauxlib.luaL_loadstring(L,fengari.to_luastring(full));
+    if(status!==lua.LUA_OK){ throw new Error(fengari.to_jsstring(lua.lua_tostring(L,-1))); }
+
+    lua.lua_getglobal(L,fengari.to_luastring('js'));
+    interop.push(L, stage);
+    lua.lua_setglobal(L,fengari.to_luastring('stage'));
+
+    const callStatus = lua.lua_pcall(L,0,0,0);
+    if(callStatus!==lua.LUA_OK){ throw new Error(fengari.to_jsstring(lua.lua_tostring(L,-1))); }
+  }
+
+  const code = document.getElementById('code');
+  const demo = document.getElementById('demo');
+  const file = document.getElementById('file');
+
+  document.getElementById('run').addEventListener('click',()=>{
+    stage.innerHTML='';
+    try{ runLua(code.value.trim() || demo.value); }
+    catch(e){ const pre=document.createElement('pre'); pre.textContent='Lua error: '+e.message; stage.appendChild(pre); }
+  });
+
+  file.addEventListener('change',async e=>{
+    const f = e.target.files?.[0]; if(!f) return;
+    code.value = await f.text();
+  });
+
+  window.addEventListener('load',()=>{ document.getElementById('run').click(); });
+})();
+</script>
+</body>
+</html>
