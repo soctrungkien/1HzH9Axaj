@@ -1,0 +1,11 @@
+name = "1.21.8"
+pack-format = "packwiz:1.1.0"
+
+[versions]
+minecraft = "1.21.8"
+fabric = "0.17.2"
+
+[index]
+file = "index.toml"
+hash-format = "sha512"
+hash = "f0a718c681caad5a5625a6efc784f55a711c549b5b923ca56435397e82d4cb72f42ce792f473722a0238a56638b9e33c14d24d15a858c890b4ffbb7287fa37f2"
