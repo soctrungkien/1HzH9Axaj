@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPS Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://soctrungkien.github.io/1HzH9Axaj/Fira_Code_v6.2/fira_code.css" rel="stylesheet">
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(120deg, #ff9a9e 0%, #fad0c4 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(25px);
+    border-radius: 20px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+    padding: 36px;
+    width: 100%;
+    max-width: 520px;
+    animation: fadeZoom 0.6s ease-out;
+}
+
+@keyframes fadeZoom {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.logo {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 25px rgba(255, 118, 136, 0.35);
+}
+
+.logo i {
+    font-size: 28px;
+    color: white;
+}
+
+.title {
+    font-size: 30px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    font-size: 15px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.credits {
+    font-size: 13px;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #374151;
+    letter-spacing: 0.6px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    font-size: 15px;
+    background: #f9fafb;
+    transition: all 0.25s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #ff7eb3;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(255, 126, 179, 0.15);
+}
+
+/* Button */
+.create-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(255, 118, 136, 0.35);
+}
+
+.create-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Spinner */
+.loading-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    display: inline-block;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Status messages */
+.status-message {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.status-success {
+    background: rgba(34,197,94,0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34,197,94,0.2);
+}
+
+.status-error {
+    background: rgba(239,68,68,0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239,68,68,0.2);
+}
+
+.status-info {
+    background: rgba(59,130,246,0.1);
+    color: #2563eb;
+    border: 1px solid rgba(59,130,246,0.2);
+}
+
+/* Feature list */
+.feature-list {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.feature-item i {
+    color: #ff7eb3;
+    margin-right: 10px;
+    width: 14px;
+}
+
+/* VPS link */
+.vps-link {
+    margin-top: 18px;
+    padding: 14px;
+    background: rgba(255, 118, 136, 0.08);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 118, 136, 0.2);
+}
+
+.vps-link-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.vps-link-url {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: #ff758c;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.vps-link-url:hover {
+    text-decoration: underline;
+}
+
+/* Progress */
+.progress-bar {
+    width: 100%;
+    height: 5px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    margin-top: 12px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff758c, #ff7eb3);
+    border-radius: 3px;
+    transition: width 0.25s ease;
+}
+
+/* Tabs */
+.nav-tabs {
+    display: flex;
+    margin-bottom: 24px;
+    background: #f3f4f6;
+    border-radius: 14px;
+    padding: 4px;
+}
+
+.nav-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.25s ease;
+}
+
+.nav-tab.active {
+    background: white;
+    color: #ff7eb3;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* User list */
+.user-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    margin-bottom: 10px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.user-token {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.user-link {
+    color: #ff7eb3;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.user-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .container {
+        padding: 24px 18px;
+    }
+
+    .title {
+        font-size: 22px;
+    }
+
+    .user-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-server"></i>
+            </div>
+            <h1 class="title">VPS Manager</h1>
+            <p style="font-family:Inter" class="subtitle">ᴍᴏᴅᴅᴇʀ ᴠᴇʀsɪᴏɴ</p>
+            <p style="font-family:Inter" class="credits">Developed by <strong>Hiếuz And DuckNoVis</strong></p>
+            <p style="font-family:Inter" class="credits">Based on DuckNoVis Technology</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('create')">
+                <i class="fas fa-plus-circle"></i> Tạo VPS
+            </button>
+            <button class="nav-tab" onclick="switchTab('manage')">
+                <i class="fas fa-list"></i> Quản lý
+            </button>
+        </div>
+
+        <!-- Create VPS Tab -->
+        <div id="create-tab" class="tab-content active">
+            <form id="vpsForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fab fa-github"></i> GitHub Token
+                    </label>
+                    <input 
+                        type="password" 
+                        id="githubToken" 
+                        class="form-input" 
+                        placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fa-solid fa-key"></i> Password VPS (soon)
+                    </label>
+                    <input 
+                        type="password" 
+                        id="passvps" 
+                        class="form-input" 
+                        placeholder="87654321"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="create-btn" id="createBtn">
+                    <i class="fas fa-rocket"></i> Tạo VPS Windows
+                </button>
+
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </form>
+
+            <div id="statusMessage"></div>
+            <div id="vpsLink"></div>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-desktop"></i>
+                    Windows Server với GUI đầy đủ
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-globe"></i>
+                    Truy cập qua noVNC (Web-based)
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-clock"></i>
+                    Thời gian hoạt động: 5.5 giờ
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-sync-alt"></i>
+                    Tự động khởi động lại
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    Bảo mật với mật khẩu tùy chỉnh (soon)
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage VPS Tab -->
+        <div id="manage-tab" class="tab-content">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button onclick="loadVpsUsers()" class="create-btn" style="width: auto; padding: 12px 24px;">
+                    <i class="fas fa-sync-alt"></i> Làm mới danh sách
+                </button>
+            </div>
+            
+            <div id="usersList">
+                <div style="text-align: center; padding: 40px; color: #718096;">
+                    <i class="fas fa-server" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <p>Nhấn "Làm mới danh sách" để xem các VPS đang hoạt động</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+const GITHUB_TOKEN = "YOUR_TOKEN_HERE";
+const OWNER = "soctrungkien";
+const REPO = "vps-github";
+
+async function cancelLatestWorkflow() {
+  try {
+    // 1️⃣ Lấy workflow runs gần nhất
+    const runsRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/runs`, {
+      headers: {
+        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github+json"
+      }
+    });
+    const runsData = await runsRes.json();
+    if (!runsData.workflow_runs || runsData.workflow_runs.length === 0) {
+      console.log("❌ Không có workflow nào đang chạy.");
+      return;
+    }
+
+    // Lấy run gần nhất
+    const latestRun = runsData.workflow_runs[0];
+    const runId = latestRun.id;
+    console.log(`⚡ Canceling workflow: ${latestRun.name} (RUN_ID=${runId})`);
+
+    // 2️⃣ Cancel workflow
+    const cancelRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/actions/runs/${runId}/cancel`, {
+      method: "POST",
+      headers: {
+        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github+json"
+      }
+    });
+
+    if (cancelRes.status === 202) {
+      console.log("✅ Workflow đang được cancel!");
+    } else {
+      const errData = await cancelRes.json();
+      console.log("❌ Lỗi khi cancel workflow:", errData);
+    }
+  } catch (err) {
+    console.error("❌ Lỗi:", err);
+  }
+}
+        
+        const API_BASE = 'https://vps-github.vercel.app/api';
+        
+        // Tab switching
+        function switchTab(tab) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+
+        // Progress bar animation
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            progressBar.style.display = 'block';
+            progressFill.style.width = percent + '%';
+        }
+
+        // Status message display
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            </div>`;
+        }
+
+        // Display VPS link
+        function showVpsLink(url) {
+            const linkDiv = document.getElementById('vpsLink');
+            linkDiv.innerHTML = `
+                <div class="vps-link">
+                    <div class="vps-link-title">
+                        <i class="fas fa-external-link-alt"></i> VPS của bạn đã sẵn sàng!
+                    </div>
+                    <a href="${url}" target="_blank" class="vps-link-url">${url}</a>
+                    <div style="margin-top: 12px; font-size: 13px; color: #718096;">
+                        <i class="fas fa-key"></i> Mật khẩu VNC: <strong>passtest</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Form submission
+        document.getElementById('vpsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const githubToken = document.getElementById('githubToken').value;
+            const createBtn = document.getElementById('createBtn');
+            const originalBtnText = createBtn.innerHTML;
+            
+            if (!githubToken) {
+                showStatus('Vui lòng nhập GitHub Token!', 'error');
+                return;
+            }
+
+            // Validate GitHub token format
+            if (!githubToken.startsWith('ghp_') && !githubToken.startsWith('github_pat_')) {
+                showStatus('GitHub Token không hợp lệ! Token phải bắt đầu bằng "ghp_" hoặc "github_pat_"', 'error');
+                return;
+            }
+
+            try {
+                // Update UI
+                createBtn.disabled = true;
+                createBtn.innerHTML = '<span class="loading-spinner"></span>Đang tạo VPS...';
+                showStatus('Đang khởi tạo repository và workflow...', 'info');
+                updateProgress(10);
+                
+                createRepo(githubToken, repoName)
+
+                // API call
+                const response = await fetch(`${API_BASE}/create-vps`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        github_token: githubToken
+                    })
+                });
+
+                const data = await response.json();
+                updateProgress(30);
+
+                if (response.ok) {
+                    showStatus(`✅ VPS đang được khởi tạo! Repository: ${data.repository}`, 'success');
+                    updateProgress(50);
+                    
+                    // Poll for VPS status
+                    pollVpsStatus(githubToken);
+                } else {
+                    throw new Error(data.error || 'Có lỗi xảy ra khi tạo VPS');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ Lỗi: ${error.message}`, 'error');
+                updateProgress(0);
+            } finally {
+                createBtn.disabled = false;
+                createBtn.innerHTML = originalBtnText;
+            }
+        });
+
+        // Poll VPS status
+        async function pollVpsStatus(githubToken) {
+            const maxAttempts = 120; // 20 minutes
+            let attempts = 0;
+
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                updateProgress(50 + (attempts * 1.5));
+
+                try {
+                    const response = await fetch(`${API_BASE}/vpsuser`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            github_token: githubToken
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.remote_link && !data.remote_link.includes('TUNNEL_FAILED')) {
+                        clearInterval(pollInterval);
+                        updateProgress(100);
+                        showStatus('🎉 VPS đã sẵn sàng! Đang chuyển hướng...', 'success');
+                        showVpsLink(data.remote_link);
+                        
+                        // Auto open VPS in new tab after 3 seconds
+                        setTimeout(() => {
+                            window.open(data.remote_link, '_blank');
+                        }, 3000);
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(pollInterval);
+                        showStatus('⏰ Timeout: VPS có thể vẫn đang khởi động. Vui lòng kiểm tra lại sau vài phút.', 'error');
+                        updateProgress(0);
+                    } else {
+                        showStatus(`🔄 Đang chờ VPS khởi động... (${attempts}/${maxAttempts})`, 'info');
+                    }
+
+                } catch (error) {
+                    console.log(`Poll attempt ${attempts} failed:`, error);
+                    if (attempts >= maxAttempts) {
+                        clearInterval(pollInterval);
+                        showStatus('❌ Không thể kết nối tới server. VPS có thể vẫn đang khởi động.', 'error');
+                        updateProgress(0);
+                    }
+                }
+            }, 10000); // Check every 10 seconds
+        }
+
+        // Load VPS users list
+        async function loadVpsUsers() {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '<div style="text-align: center; padding: 20px;"><span class="loading-spinner"></span> Đang tải...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/vpsuser`);
+                const data = await response.json();
+
+                if (response.ok && data.users && data.users.length > 0) {
+                    usersList.innerHTML = `
+                        <div style="margin-bottom: 20px; text-align: center; color: #4a5568;">
+                            <strong>${data.total}</strong> VPS đang hoạt động
+                        </div>
+                        <div class="user-list">
+                            ${data.users.map(user => `
+                                <div class="user-item">
+                                    <div class="user-token">${user.token}</div>
+                                    <a href="${user.link}" target="_blank" class="user-link">
+                                        <i class="fas fa-external-link-alt"></i> Truy cập VPS
+                                    </a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    usersList.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #718096;">
+                            <i class="fas fa-server" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                            <p>Chưa có VPS nào đang hoạt động</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading VPS users:', error);
+                usersList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #e53e3e;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <p>Lỗi khi tải danh sách VPS</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-focus GitHub token input
+        document.getElementById('githubToken').focus();
+    </script>
+</body>
+</html>
