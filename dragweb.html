@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WindUI Kéo Thả Editor Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+  .resizer { width: 12px; height: 12px; background: #4b5563; position: absolute; right: 0; bottom: 0; cursor: se-resize; }
+  .selected { outline: 2px solid #3b82f6; }
+</style>
+</head>
+<body class="h-screen" style="color: white;">
+
+<iframe id="canvas" class="absolute inset-0 w-full h-full" style="color: white;"></iframe>
+
+<div id="outputBox" class="fixed bottom-2 right-2 w-1/3 h-1/3 bg-white shadow border hidden flex-col">
+  <div class="p-2 border-b font-bold flex justify-between">
+    <span>HTML Output</span>
+    <button onclick="document.getElementById('outputBox').classList.add('hidden')">✖</button>
+  </div>
+  <textarea id="output" class="flex-1 w-full p-2 font-mono text-xs" style="height: 250px;"></textarea>
+</div>
+
+<script type="module">
+import { WindUI, Section, Button, Slider, Input } from "https://soctrungkien.github.io/1HzH9Axaj/uploads/windui.js";
+
+// --- IFRAME ---
+const iframe = document.getElementById("canvas");
+const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+doc.open();
+doc.write("<!DOCTYPE html><html><head></head><body class='relative w-full h-full'></body></html>");
+doc.close();
+
+// inject Tailwind
+const tw = doc.createElement("script");
+tw.src = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4";
+doc.head.appendChild(tw);
+
+// --- STATE ---
+let selected = null;
+let dragging = null, offsetX=0, offsetY=0;
+let resizing = null, startX, startY, startW, startH;
+
+// --- MAKE ELEMENT ---
+function makeElement(type){
+  let el;
+  if(type==="text"){ el = doc.createElement("div"); el.textContent="Văn bản"; el.className="text-lg"; }
+  if(type==="button"){ el = doc.createElement("button"); el.textContent="Nút"; el.className="bg-blue-500 text-white px-3 py-1 rounded"; }
+  if(type==="image"){ el = doc.createElement("img"); el.src="https://soctrungkien.github.io/1HzH9Axaj/output-onlinepngtools.txt"; el.className="w-32 h-auto"; }
+
+  el.style.position="absolute"; el.style.top="50px"; el.style.left="50px"; el.classList.add("cursor-move");
+
+  const resizer = doc.createElement("div");
+  resizer.className="resizer rounded-sm";
+  el.appendChild(resizer);
+
+  el.addEventListener("mousedown", e=>{
+    if(e.target===resizer) return;
+    e.stopPropagation();
+    if(selected) selected.classList.remove("selected");
+    selected=el; selected.classList.add("selected");
+    dragging=el; offsetX=e.offsetX; offsetY=e.offsetY;
+  });
+
+  resizer.addEventListener("mousedown", e=>{
+    e.stopPropagation(); resizing=el; startX=e.clientX; startY=e.clientY;
+    startW=el.offsetWidth; startH=el.offsetHeight;
+  });
+
+  doc.body.appendChild(el);
+}
+
+// --- DRAG & RESIZE ---
+doc.addEventListener("mousemove", e=>{
+  if(dragging){ dragging.style.left=(e.pageX-offsetX)+"px"; dragging.style.top=(e.pageY-offsetY)+"px"; }
+  if(resizing){ resizing.style.width=(startW+(e.clientX-startX))+"px"; resizing.style.height=(startH+(e.clientY-startY))+"px"; }
+});
+doc.addEventListener("mouseup", ()=>{ dragging=null; resizing=null; });
+
+// --- WINDUI ---
+const editorUI = new WindUI({Title:"Editor Pro", Width:350, Height:700});
+
+// Section thêm element
+const sectionAdd = Section({Title:"Thêm Yếu Tố", parent:editorUI.body});
+Button({Title:"📝 Văn bản", Callback:()=>makeElement("text"), parent:sectionAdd});
+Button({Title:"🖼 Hình ảnh", Callback:()=>makeElement("image"), parent:sectionAdd});
+Button({Title:"🔘 Nút", Callback:()=>makeElement("button"), parent:sectionAdd});
+
+// Section chỉnh thuộc tính
+const propSection = Section({Title:"Thuộc Tính", parent:editorUI.body});
+
+// Text
+Input({Title:"Văn bản", Placeholder:"Nhập text", Callback:v=>{ if(selected && selected.tagName!=="IMG") selected.textContent=v; }, parent:propSection});
+// Image URL
+Input({Title:"URL Ảnh", Placeholder:"https://...", Callback:v=>{ if(selected?.tagName==="IMG") selected.src=v; }, parent:propSection});
+// Button class
+Input({Title:"Class (Nút)", Placeholder:"bg-blue-500 text-white px-2", Callback:v=>{ if(selected?.tagName==="BUTTON") selected.className=v; }, parent:propSection});
+// Font size
+Slider({Title:"Font size", Value:{Min:10,Max:100,Default:16}, Step:1, Callback:v=>{ if(selected && selected.tagName!=="IMG") selected.style.fontSize=v+"px"; }, parent:propSection});
+// Width & Height
+Slider({Title:"Width", Value:{Min:10,Max:800,Default:100}, Step:1, Callback:v=>{ if(selected) selected.style.width=v+"px"; }, parent:propSection});
+Slider({Title:"Height", Value:{Min:10,Max:800,Default:50}, Step:1, Callback:v=>{ if(selected) selected.style.height=v+"px"; }, parent:propSection});
+// Text color
+Input({Title:"Màu chữ", Placeholder:"#000000", Callback:v=>{ if(selected) selected.style.color=v; }, parent:propSection});
+// Background color
+Input({Title:"Màu nền", Placeholder:"#ffffff", Callback:v=>{ if(selected) selected.style.backgroundColor=v; }, parent:propSection});
+// Border radius
+Slider({Title:"Border Radius", Value:{Min:0,Max:100,Default:0}, Step:1, Callback:v=>{ if(selected) selected.style.borderRadius=v+"px"; }, parent:propSection});
+
+// Export HTML
+Button({
+  Title: "Xuất HTML",
+  Callback: () => {
+    const clone = doc.body.cloneNode(true);
+    clone.querySelectorAll(".resizer").forEach(r => r.remove());
+    clone.querySelectorAll(".cursor-move,.selected").forEach(el => el.classList.remove("cursor-move","selected"));
+
+    document.getElementById("outputBox").classList.remove("hidden");
+document.getElementById("output").value = `<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>
+</head>
+<body class="relative w-full h-full">
+${clone.innerHTML}
+</body>
+</html>`;
+},
+parent: propSection // <-- phải có parent
+});
+</script>
+</body>
+</html>
