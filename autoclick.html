@@ -1,0 +1,163 @@
+<button id="clickBtn">Nhấn tôi</button>
+<span id="counter">0</span> lần
+  <script>
+    const button = document.getElementById("clickBtn");
+    const counter = document.getElementById("counter");
+    let count = 0;
+
+    button.addEventListener("click", () => {
+      count++;
+      counter.textContent = count;
+    });
+  </script>
+#clickBtn
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script type="module">
+import { WindUI, Section, Button, Slider, Input, Toggle, Notification } from "https://soctrungkien.github.io/1HzH9Axaj/uploads/windui.js";
+
+const ui = new WindUI({
+  Title: "Auto Click Menu",
+  Width: 400,
+  Height: 350,
+  Theme: "dark"
+});
+
+const tab = ui.addTab("Auto Click");
+
+// State
+let isClicking = false;
+let isPaused = false;
+let intervalId = null;
+let delay = 1000; // ms
+let targetSelector = "body"; // default
+
+function notify(text, duration = 1500) {
+  Notification({
+    Text: text,
+    parent: ui.container, // pass container element
+    Duration: duration
+  });
+}
+
+function doClick() {
+  const elem = document.querySelector(targetSelector);
+  if (elem) {
+    elem.click();
+  } else {
+    notify(`Không tìm thấy phần tử: ${targetSelector}`, 2000);
+    stopAutoClick();
+  }
+}
+
+function startAutoClick() {
+  if (intervalId || isPaused) return;
+  intervalId = setInterval(() => doClick(), delay);
+  notify("Đã bắt đầu Auto Click!");
+}
+
+function stopAutoClick() {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+    isClicking = false;
+    isPaused = false;
+    notify("Đã dừng Auto Click!");
+    toggle.setValue(false);
+    pauseBtn.setDisabled(true);
+  }
+}
+
+function pauseAutoClick() {
+  if (intervalId && !isPaused) {
+    clearInterval(intervalId);
+    intervalId = null;
+    isPaused = true;
+    notify("Đã tạm dừng!");
+    pauseBtn.setText("Tiếp tục");
+  }
+}
+
+function resumeAutoClick() {
+  if (isPaused) {
+    isPaused = false;
+    startAutoClick();
+    pauseBtn.setText("Tạm dừng");
+  }
+}
+
+// Toggle auto click on/off
+const toggle = Toggle({
+  Title: "Bật Auto Click",
+  Desc: "Tự động click vào phần tử chọn",
+  Value: false,
+  Callback: (value) => {
+    if (value) {
+      isClicking = true;
+      isPaused = false;
+      startAutoClick();
+      pauseBtn.setDisabled(false);
+      pauseBtn.setText("Tạm dừng");
+    } else {
+      stopAutoClick();
+    }
+  },
+  parent: tab
+});
+
+// Pause/Resume button
+const pauseBtn = Button({
+  Title: "Tạm dừng",
+  Callback: () => {
+    if (!isPaused) {
+      pauseAutoClick();
+    } else {
+      resumeAutoClick();
+    }
+  },
+  parent: tab
+});
+
+// Add helper methods
+pauseBtn.setDisabled = (val) => {
+  pauseBtn.disabled = val;
+  pauseBtn.classList.toggle("opacity-50", val);
+  pauseBtn.style.pointerEvents = val ? "none" : "auto";
+};
+
+pauseBtn.setText = (text) => {
+  pauseBtn.querySelector("span").innerText = text;
+};
+
+pauseBtn.setDisabled(true);
+
+// Slider speed control
+Slider({
+  Title: "Tốc độ (ms)",
+  Value: { Min: 1, Max: 5000, Default: delay },
+  Step: 100,
+  Callback: (val) => {
+    delay = val;
+    if (isClicking && !isPaused) {
+      clearInterval(intervalId);
+      intervalId = null;
+      startAutoClick();
+    }
+  },
+  parent: tab
+});
+
+// Input selector
+Input({
+  Title: "Selector phần tử click",
+  Placeholder: "Ví dụ: body, button, #myId",
+  Callback: (val) => {
+    targetSelector = val.trim() || "body";
+    if (isClicking && !isPaused) {
+      clearInterval(intervalId);
+      intervalId = null;
+      startAutoClick();
+    }
+  },
+  parent: tab
+});
+</script>
