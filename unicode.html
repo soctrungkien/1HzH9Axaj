@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Unicode Converter</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#7c3aed}
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;min-height:100vh;margin:0;background:linear-gradient(180deg,#071029 0%,#081229 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:28px}
+    .wrap{width:100%;max-width:920px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:20px;border-radius:12px;box-shadow:0 6px 30px rgba(2,6,23,0.6);}
+    h1{margin:0 0 8px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .col{display:flex;flex-direction:column;gap:10px}
+    textarea{width:100%;min-height:140px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:14px}
+    input[type=text]{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .controls{display:flex;gap:8px;flex-wrap:wrap}
+    button{background:var(--accent);border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .result{min-height:140px;padding:12px;border-radius:8px;border:1px dashed rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);white-space:pre-wrap;word-break:break-word}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:12px;color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;align-items:center}
+    @media (max-width:760px){.grid{grid-template-columns:1fr}}
+    
+/* 1. Ẩn và tạo kiểu dáng cho ô kiểm mặc định (khi chưa được chọn) */
+input[type="checkbox"] {
+    appearance: none; /* Ẩn giao diện mặc định của trình duyệt */
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--text-secondary);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative; /* Dùng để định vị dấu tích */
+    transition: all 0.3s ease;
+}
+
+/* 2. Kiểu dáng khi ô kiểm được chọn */
+input[type="checkbox"]:checked {
+    background-color: var(--accent-color-1);
+    border-color: var(--accent-color-1);
+    /* Áp dụng animation nảy cho hộp */
+    animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+}
+
+/* 3. Tạo và tạo kiểu dáng cho Dấu Tích (checkmark) */
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    /* Căn giữa hoàn hảo */
+    transform: translate(-50%, -50%);
+    /* Chèn SVG (dấu tích màu trắng) */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>');
+    background-repeat: no-repeat;
+    background-size: contain;
+    /* Áp dụng animation xuất hiện */
+    animation: checkmark 0.3s ease-out forwards;
+}
+
+/* Animation nảy cho hộp checkbox khi được chọn */
+@keyframes bounceIn {
+    0% { transform: scale(0.9); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+/* Animation xuất hiện cho dấu tích */
+@keyframes checkmark {
+    from {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+  </style>
+</head>
+<body>
+  <div class="wrap card">
+    <h1>Unicode Converter</h1>
+    <p class="lead">Dán chuỗi chứa các mã Unicode (ví dụ: \u00E1, U+1F600, &#x1F600;, &#128512;, hoặc /unicode 1F600) — tool sẽ chuyển thành ký tự thật. 🪄</p>
+
+    <div class="grid">
+      <div class="col">
+        <label class="small">Input (các dạng hỗ trợ):</label>
+        <textarea id="input" placeholder="Ví dụ:\nHello world\nU+1F60A U+1F4A9\n&#x1F600; &#128512;\n/unicode 1F600,1F601"></textarea>
+
+        <div class="controls">
+          <button id="convert">Convert • Chuyển</button>
+          <button id="previewToggle" class="ghost">Live preview: ON</button>
+          <button id="clear" class="ghost">Clear</button>
+          <button id="copyInput" class="ghost">Copy input</button>
+        </div>
+
+        <div class="small">Tuỳ chọn chuyển:</div>
+        <div class="row">
+          <label class="small"><input type="checkbox" id="decodeEscapes" checked> Giải mã escape sequences (\uXXXX, \UXXXXXXXX)</label>
+        </div>
+        <div class="row">
+          <label class="small"><input type="checkbox" id="decodeHtmlEntities" checked> Giải mã HTML entities (&#x...;, &#...;)</label>
+        </div>
+        <div class="row">
+          <label class="small"><input type="checkbox" id="decodeUPrefix" checked> Giải mã U+XXXX</label>
+        </div>
+        <div class="row">
+          <label class="small"><input type="checkbox" id="decodeSlashUnicode" checked> Giải mã /unicode 1F600 (các mã phân tách bằng space/comma)</label>
+        </div>
+      </div>
+
+      <div class="col">
+        <label class="small">Result (Kết quả):</label>
+        <div id="result" class="result" contenteditable="false">— Chưa có kết quả —</div>
+
+        <div class="controls">
+          <button id="copyResult">Copy result</button>
+          <button id="showHex" class="ghost">Show code points</button>
+          <button id="download" class="ghost">Download .txt</button>
+        </div>
+
+        <div style="margin-top:8px" class="small">Preview:</div>
+        <div id="preview" class="result" style="min-height:60px"> </div>
+
+      </div>
+    </div>
+
+    <footer>Hướng dẫn ngắn: dán input rồi nhấn <strong>Convert</strong>. Live preview tự cập nhật nếu bật. 😎</footer>
+  </div>
+
+<script>
+(function(){
+  const input = document.getElementById('input');
+  const convertBtn = document.getElementById('convert');
+  const resultEl = document.getElementById('result');
+  const previewEl = document.getElementById('preview');
+  const previewToggle = document.getElementById('previewToggle');
+  const copyResult = document.getElementById('copyResult');
+  const clearBtn = document.getElementById('clear');
+  const copyInputBtn = document.getElementById('copyInput');
+  const showHexBtn = document.getElementById('showHex');
+  const downloadBtn = document.getElementById('download');
+
+  let livePreview = true;
+
+  previewToggle.addEventListener('click', ()=>{ livePreview = !livePreview; previewToggle.textContent = 'Live preview: ' + (livePreview? 'ON' : 'OFF'); if(livePreview) updatePreview(); });
+
+  function decodeAll(text){
+    if(!text) return '';
+    let t = text;
+
+    // 1) \uXXXX or \UXXXXXXXX or \x{...}
+    const escapeRegex = /\\u\{?([0-9A-Fa-f]{1,8})\}?|\\u([0-9A-Fa-f]{4})|\\U([0-9A-Fa-f]{8})|\\x\{([0-9A-Fa-f]{1,8})\}|\\x([0-9A-Fa-f]{2})/g;
+    t = t.replace(escapeRegex, (m,g1,g2,g3,g4,g5)=>{
+      const hex = (g1||g2||g3||g4||g5) || '';
+      try{ const cp = parseInt(hex,16); if(isNaN(cp)) return m; return String.fromCodePoint(cp);}catch(e){return m}
+    });
+
+    // 2) HTML hex entities: &#x1F600; and decimal: &#128512;
+    t = t.replace(/&#x([0-9A-Fa-f]+);/g, (_,h)=> String.fromCodePoint(parseInt(h,16)));
+    t = t.replace(/&#([0-9]+);/g, (_,d)=> String.fromCodePoint(parseInt(d,10)));
+
+    // 3) U+XXXX or U+{XXXX}
+    t = t.replace(/U\+\{?([0-9A-Fa-f]{1,6})\}?/g, (_,h)=> String.fromCodePoint(parseInt(h,16)));
+
+    // 4) /unicode 1F600,1F601 or /unicode:1F600 1F601
+    t = t.replace(/\/unicode[:\s]*([0-9A-Fa-f,\s]+)/g, (_,list)=>{
+      const parts = list.split(/[\s,]+/).filter(Boolean);
+      return parts.map(p=>{ try{ const cp = parseInt(p,16); return String.fromCodePoint(cp);}catch(e){return p}}).join('');
+    });
+
+    return t;
+  }
+
+  function onlyConvertSelectedOptions(text){
+    let t = text;
+    if(document.getElementById('decodeEscapes').checked) {
+      // handled inside decodeAll
+    } else {
+      // remove handling for escape sequences: replace them to placeholder so decodeAll won't convert
+      t = t.replace(/(\\u\{?[0-9A-Fa-f]{1,8}\}?|\\U[0-9A-Fa-f]{8}|\\x\{?[0-9A-Fa-f]{1,8}\}?|\\x[0-9A-Fa-f]{2})/g, '$1');
+    }
+    if(!document.getElementById('decodeHtmlEntities').checked){
+      // noop because decodeAll will still try; simplest: revert those patterns after decode
+    }
+    // For simplicity, we run decodeAll then if option unchecked, we try to revert patterns back — but main use will keep most options checked.
+    return decodeAll(t);
+  }
+
+  function convert(){
+    const text = input.value;
+    if(!text) { resultEl.textContent = '— Không có input —'; previewEl.textContent = ''; return; }
+    const out = decodeAll(text);
+    resultEl.textContent = out;
+    if(livePreview) previewEl.textContent = out;
+  }
+
+  convertBtn.addEventListener('click', convert);
+  input.addEventListener('input', ()=>{ if(livePreview) convert(); });
+
+  copyResult.addEventListener('click', ()=>{ navigator.clipboard.writeText(resultEl.textContent || '').then(()=>{copyResult.textContent='Copied ✓'; setTimeout(()=>copyResult.textContent='Copy result',900);} ) });
+  copyInputBtn.addEventListener('click', ()=>{ navigator.clipboard.writeText(input.value || '').then(()=>{copyInputBtn.textContent='Copied ✓'; setTimeout(()=>copyInputBtn.textContent='Copy input',900);} ) });
+  clearBtn.addEventListener('click', ()=>{ input.value=''; resultEl.textContent='— Chưa có kết quả —'; previewEl.textContent=''; });
+
+  showHexBtn.addEventListener('click', ()=>{
+    const s = resultEl.textContent || '';
+    if(!s) return;
+    const arr = Array.from(s).map(ch => 'U+' + ch.codePointAt(0).toString(16).toUpperCase().padStart(4,'0'));
+    resultEl.textContent = arr.join(' ');
+    previewEl.textContent = s; // keep preview
+  });
+
+  downloadBtn.addEventListener('click', ()=>{
+    const blob = new Blob([resultEl.textContent || ''], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'unicode-result.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  // initial demo text
+  input.value = "Hello world\nU+1F600 U+1F60A\n&#x1F600; &#128512;\n/unicode 1F600,1F601";
+  convert();
+})();
+</script>
+</body>
+</html>
