@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Explorer</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+  <div class="bg-white w-full p-6">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">File Explorer</h1>
+    <div id="explorer"></div>
+  </div>
+
+<script>
+function detectRepo() {
+  const host = window.location.hostname;
+  const pathParts = window.location.pathname.split("/").filter(Boolean); 
+  const owner = host.split(".github.io")[0];
+  const repoName = pathParts.length > 0 ? pathParts[0] : "";
+  const repoPath = pathParts.slice(1).join("/");
+  const repo = `${owner}/${repoName}`;
+  return { repo, repoPath };
+}
+const { repo, repoPath } = detectRepo();
+
+async function loadRepo(path = "") {
+  const explorer = document.getElementById("explorer");
+  explorer.innerHTML = "Loading...";
+  let apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+  const res = await fetch(apiUrl);
+  if (!res.ok) {
+    explorer.innerHTML = "Cannot fetch repo. Maybe it's private or wrong path.";
+    return;
+  }
+  const data = await res.json();
+  explorer.innerHTML = "";
+  renderTree(data, explorer, path);
+}
+
+function renderTree(items, container, currentPath) {
+  const ul = document.createElement("ul");
+  ul.className = "ml-4 space-y-1";
+  items.forEach(item => {
+    const li = document.createElement("li");
+    li.className = "cursor-pointer flex items-center space-x-2 hover:bg-gray-100 p-1 rounded";
+    
+    if (item.type === "dir") {
+      li.innerHTML = `📁  <a href="${window.location.href + '/' + item.name}" target="_blank">${item.name}</a>`;
+    } else if (item.type === "file") {
+      li.innerHTML = `📄  <a href="${window.location.href + '/' + item.name}" target="_blank">${item.name}</a>`;
+    }
+    ul.appendChild(li);
+  });
+  container.appendChild(ul);
+}
+
+// start
+loadRepo();
+</script>
+</body>
+</html>
