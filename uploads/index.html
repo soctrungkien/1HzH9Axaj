@@ -26,7 +26,7 @@ const { repo, repoPath } = detectRepo();
 async function loadRepo(path = "") {
   const explorer = document.getElementById("explorer");
   explorer.innerHTML = "Loading...";
-  let apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+  let apiUrl = `https://api.github.com/repos/${repo}/contents/${path || repoPath}`;
   const res = await fetch(apiUrl);
   if (!res.ok) {
     explorer.innerHTML = "Cannot fetch repo. Maybe it's private or wrong path.";
