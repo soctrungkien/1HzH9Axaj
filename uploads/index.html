@@ -41,13 +41,17 @@ function renderTree(items, container, currentPath) {
   const ul = document.createElement("ul");
   ul.className = "ml-4 space-y-1";
   items.forEach(item => {
+    if (item.type === "file" && /index\.htm(l)?$/i.test(item.name)) {
+      return; 
+    }
+
     const li = document.createElement("li");
     li.className = "cursor-pointer flex items-center space-x-2 hover:bg-gray-100 p-1 rounded";
     
     if (item.type === "dir") {
-      li.innerHTML = `📁  <a href="${window.location.href + '/' + item.name}" target="_blank">${item.name}</a>`;
+      li.innerHTML = `📁  <a href="${window.location.href + item.name}" target="_blank">${item.name}</a>`;
     } else if (item.type === "file") {
-      li.innerHTML = `📄  <a href="${window.location.href + '/' + item.name}" target="_blank">${item.name}</a>`;
+      li.innerHTML = `📄  <a href="${window.location.href + item.name}" target="_blank">${item.name}</a>`;
     }
     ul.appendChild(li);
   });
