@@ -1,0 +1,200 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local lp = Players.LocalPlayer
+
+local logs = {}
+local function log(t)
+    print("[TEST] "..t)
+    table.insert(logs, t)
+end
+
+-- ========================
+-- 🧪 Anti Kick (check UI)
+-- ========================
+task.spawn(function()
+    local total = 100
+    local detected = 0
+
+    local kicked = false
+
+    local con = CoreGui:WaitForChild("RobloxPromptGui").promptOverlay.ChildAdded:Connect(function(v)
+        if v.Name == "ErrorPrompt" then
+            kicked = true
+        end
+    end)
+
+    for i = 1, total do
+        kicked = false
+
+        pcall(function()
+            lp:Kick("Test "..i)
+        end)
+
+        RunService.RenderStepped:Wait()
+
+        if kicked then
+            detected += 1
+        end
+    end
+
+    con:Disconnect()
+
+    if detected > 0 then
+        log("Anti Kick: FAIL ("..detected.."/"..total..")")
+    else
+        log("Anti Kick: PASS (blocked all)")
+    end
+end)
+
+-- ========================
+-- 🧪 Anti Pause (TP spam)
+-- ========================
+task.spawn(function()
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local total = 100
+    local success = 0
+
+    for i = 1, total do
+        local old = hrp.CFrame
+
+        local ok = pcall(function()
+            hrp.CFrame = CFrame.new(0, 100000, 0)
+            hrp.CFrame = old
+        end)
+
+        if ok then
+            success += 1
+        end
+    end
+
+    if success == total then
+        log("Anti Pause: PASS ("..success.."/"..total..")")
+    else
+        log("Anti Pause: FAIL ("..success.."/"..total..")")
+    end
+end)
+
+-- ========================
+-- 🧪 Hide Name (deep check)
+-- ========================
+task.spawn(function()
+    local names = {
+        lp.Name,
+        lp.DisplayName
+    }
+
+    local guis = {}
+    local objs = {}
+
+    local parents = {
+        CoreGui,
+        lp:WaitForChild("PlayerGui")
+    }
+
+    local function createText(parent, text)
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(0,200,0,20)
+        lbl.Text = text
+        lbl.Parent = parent
+        table.insert(objs, lbl)
+
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0,200,0,20)
+        btn.Text = text
+        btn.Parent = parent
+        table.insert(objs, btn)
+    end
+
+    -- ScreenGui spam
+    for _, parent in pairs(parents) do
+        for i = 1, 50 do
+            local gui = Instance.new("ScreenGui")
+            gui.Parent = parent
+            table.insert(guis, gui)
+
+            for _, name in pairs(names) do
+                createText(gui, name)
+            end
+        end
+    end
+
+    -- 3D GUI spam
+    local part = Instance.new("Part")
+    part.Anchored = true
+    part.Size = Vector3.new(4,4,4)
+    part.Position = workspace.CurrentCamera.CFrame.Position
+    part.Parent = workspace
+
+    for i = 1, 50 do
+        for _, name in pairs(names) do
+            local bb = Instance.new("BillboardGui", part)
+            bb.Size = UDim2.new(0,200,0,50)
+            bb.AlwaysOnTop = true
+            table.insert(guis, bb)
+
+            createText(bb, name)
+
+            local sf = Instance.new("SurfaceGui", part)
+            sf.Face = Enum.NormalId.Front
+            table.insert(guis, sf)
+
+            createText(sf, name)
+        end
+    end
+
+    -- đợi 1 frame cho script khác xử lý
+    RunService.RenderStepped:Wait()
+    RunService.RenderStepped:Wait()
+    RunService.RenderStepped:Wait()
+    RunService.RenderStepped:Wait()
+    RunService.RenderStepped:Wait()
+
+    local hidden = 0
+    local total = #objs
+
+    local function isHidden(v)
+        if v.Text ~= lp.Name and v.Text ~= lp.DisplayName then
+            return true
+        end
+        if v.TextTransparency == 1 then
+            return true
+        end
+        if v.Visible == false then
+            return true
+        end
+        return false
+    end
+
+    for _,v in pairs(objs) do
+        if isHidden(v) then
+            hidden += 1
+        end
+    end
+
+    if hidden > 0 then
+        log("Hide Name: PASS ("..hidden.."/"..total..")")
+    else
+        log("Hide Name: FAIL (0/"..total..")")
+    end
+
+    -- cleanup
+    for _,g in pairs(guis) do
+        pcall(function() g:Destroy() end)
+    end
+    part:Destroy()
+end)
+
+-- ========================
+-- 🧾 RESULT
+-- ========================
+task.delay(10, function()
+    print("========== RESULT ==========")
+    for _,v in pairs(logs) do
+        print(v)
+    end
+    print("========== END ==========")
+end)
