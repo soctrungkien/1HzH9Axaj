@@ -10,6 +10,8 @@ local function log(t)
     table.insert(logs, t)
 end
 
+log('Delay 10s for full')
+
 -- ========================
 -- 🧪 Extra Checks
 -- ========================
@@ -107,7 +109,7 @@ end)
 -- ========================
 task.spawn(function()
 
-    if getgenv().AntiKickScriptCore ~= true then
+    if not getgenv().AntiKickScriptCore then
         log("⏩ Anti Kick: SKIPPED")
         return
     end
@@ -142,36 +144,6 @@ task.spawn(function()
         log("🟢 Anti Kick: OK (blocked all)")
     end
 
-end)
-
--- ========================
--- 🧪 Anti Pause
--- ========================
-task.spawn(function()
-    local char = lp.Character or lp.CharacterAdded:Wait()
-    local hrp = char:WaitForChild("HumanoidRootPart")
-
-    local total = 100
-    local success = 0
-
-    for i = 1, total do
-        local old = hrp.CFrame
-
-        local ok = pcall(function()
-            hrp.CFrame = CFrame.new(0, 100000, 0)
-            hrp.CFrame = old
-        end)
-
-        if ok then
-            success += 1
-        end
-    end
-
-    if success == total then
-        log("🟢 Anti Pause: OK ("..success.."/"..total..")")
-    else
-        log("🔴 Anti Pause: FAIL ("..success.."/"..total..")")
-    end
 end)
 
 -- ========================
