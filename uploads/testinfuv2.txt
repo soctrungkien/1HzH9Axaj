@@ -1,0 +1,263 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+local lp = Players.LocalPlayer
+
+local logs = {}
+local function log(t)
+    print("[TEST] "..t)
+    table.insert(logs, t)
+end
+
+-- ========================
+-- 🧪 Extra Checks
+-- ========================
+task.spawn(function()
+
+    -- 1. bridge_Notify
+    local bridge = getgenv().bridge_Notify
+
+    if typeof(bridge) == "function" then
+    log("🟢 bridge_Notify: OK")
+
+    pcall(function()
+        bridge(
+            "", 
+            "", 
+            0.0001
+        )
+    end)
+
+    else
+    log("🔴 bridge_Notify: FAIL")
+    end
+
+    -- 2. hooknameexec chứa [infU]
+    local hooktbl = _G.hooknameexec or _G.hooknamecall
+    local found = false
+
+    if type(hooktbl) == "table" then
+        for _,v in pairs(hooktbl) do
+            if type(v) == "string" and string.find(v, "%[infU%] ") then
+                found = true
+                break
+            end
+        end
+    end
+
+    if found then
+        log("🟢 hooknameexec: OK")
+    else
+        log("🔴 hooknameexec: FAIL")
+    end
+
+    -- 3. loadername phải là string != ""
+    local g_loader = getgenv().loadername
+    local r_loader = getrenv().loadername
+
+    if type(g_loader) == "string" and g_loader ~= "" then
+        log("🟢 getgenv loadername: OK")
+    else
+        log("🔴 getgenv loadername: FAIL")
+    end
+
+    if type(r_loader) == "string" and r_loader ~= "" then
+        log("🟢 getrenv loadername: OK")
+    else
+        log("🔴 getrenv loadername: FAIL")
+    end
+
+    -- 4. cache scan
+    local cacheFound = false
+    for _,v in pairs(game:GetDescendants()) do
+        if v.Name:find("^cache_") or v.Name:find("^cache_img_") then
+            cacheFound = true
+            break
+        end
+    end
+
+    if cacheFound then
+        log("🟢 Cache Objects: OK")
+    else
+        log("🔴 Cache Objects: FAIL")
+    end
+
+    -- 5. sound scan
+    local soundFound = false
+    for _,v in pairs(game:GetDescendants()) do
+        if v:IsA("Sound") then
+            if tostring(v.SoundId):find("123324188310290") then
+                soundFound = true
+                break
+            end
+        end
+    end
+
+    if soundFound then
+        log("🟢 Sound Inject: OK")
+    else
+        log("🔴 Sound Inject: FAIL")
+    end
+
+end)
+
+-- ========================
+-- 🧪 Anti Kick (skip nếu tắt)
+-- ========================
+task.spawn(function()
+
+    if getgenv().AntiKickScriptCore == false then
+        log("⏩ Anti Kick: SKIPPED")
+        return
+    end
+
+    local total = 100
+    local detected = 0
+    local kicked = false
+
+    local con = CoreGui:WaitForChild("RobloxPromptGui").promptOverlay.ChildAdded:Connect(function(v)
+        if v.Name == "ErrorPrompt" then
+            kicked = true
+        end
+    end)
+
+    for i = 1, total do
+        kicked = false
+
+        pcall(function()
+            lp:Kick("Test "..i)
+        end)
+
+        if kicked then
+            detected += 1
+        end
+    end
+
+    con:Disconnect()
+
+    if detected > 0 then
+        log("🔴 Anti Kick: FAIL ("..detected.."/"..total..")")
+    else
+        log("🟢 Anti Kick: OK (blocked all)")
+    end
+
+end)
+
+-- ========================
+-- 🧪 Anti Pause
+-- ========================
+task.spawn(function()
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local total = 100
+    local success = 0
+
+    for i = 1, total do
+        local old = hrp.CFrame
+
+        local ok = pcall(function()
+            hrp.CFrame = CFrame.new(0, 100000, 0)
+            hrp.CFrame = old
+        end)
+
+        if ok then
+            success += 1
+        end
+    end
+
+    if success == total then
+        log("🟢 Anti Pause: OK ("..success.."/"..total..")")
+    else
+        log("🔴 Anti Pause: FAIL ("..success.."/"..total..")")
+    end
+end)
+
+-- ========================
+-- 🧪 Hide Name
+-- ========================
+task.spawn(function()
+    local names = {
+        lp.Name,
+        lp.DisplayName,
+        tostring(lp.UserId)
+    }
+
+    local guis = {}
+    local objs = {}
+
+    local parents = {
+        CoreGui,
+        lp:WaitForChild("PlayerGui")
+    }
+
+    local function createText(parent, text)
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(0,200,0,20)
+        lbl.Text = text
+        lbl.Parent = parent
+        table.insert(objs, lbl)
+
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0,200,0,20)
+        btn.Text = text
+        btn.Parent = parent
+        table.insert(objs, btn)
+    end
+
+    for _, parent in pairs(parents) do
+        for i = 1, 50 do
+            local gui = Instance.new("ScreenGui")
+            gui.Parent = parent
+            table.insert(guis, gui)
+
+            for _, name in pairs(names) do
+                createText(gui, name)
+            end
+        end
+    end
+
+    game:GetService("RunService").Heartbeat:Wait()
+    game:GetService("RunService").Heartbeat:Wait()
+    game:GetService("RunService").Heartbeat:Wait()
+
+    local hidden = 0
+    local total = #objs
+
+    local function isHidden(v)
+        if v.Text ~= lp.Name and v.Text ~= lp.DisplayName and v.Text ~= tostring(lp.UserId) then
+            return false
+        end
+        if v.TextTransparency == 1 then return true end
+        if v.Visible == false then return true end
+        return false
+    end
+
+    for _,v in pairs(objs) do
+        if isHidden(v) then
+            hidden += 1
+        end
+    end
+
+    if hidden > 0 then
+        log("🟢 Hide Name: OK ("..hidden.."/"..total..")")
+    else
+        log("🔴 Hide Name: FAIL (0/"..total..")")
+    end
+
+    for _,g in pairs(guis) do
+        pcall(function() g:Destroy() end)
+    end
+end)
+
+-- ========================
+-- 🧾 RESULT
+-- ========================
+task.delay(10, function()
+    print("========== RESULT ==========")
+    for _,v in pairs(logs) do
+        print(v)
+    end
+    print("========== END ==========")
+end)
