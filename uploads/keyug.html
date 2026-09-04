@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Disable browser zoom -->
+    <meta
+        name="viewport"
+        content="width=device-width,
+                 initial-scale=1.0,
+                 maximum-scale=1.0,
+                 minimum-scale=1.0,
+                 user-scalable=no,
+                 viewport-fit=cover"
+    >
+
+    <title>Generate Key Turbolite</title>
+
+    <!-- Favicon -->
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path fill="%23e3e3e3" d="M223.5-423.5Q200-447 200-480t23.5-56.5Q247-560 280-560t56.5 23.5Q360-513 360-480t-23.5 56.5Q313-400 280-400t-56.5-23.5ZM280-240q-100 0-170-70T40-480q0-100 70-170t170-70q67 0 121.5 33t86.5 87h352l120 120-180 180-80-60-80 60-85-60h-47q-32 54-86.5 87T280-240Zm0-80q56 0 98.5-34t56.5-86h125l58 41 82-61 71 55 75-75-40-40H435q-14-52-56.5-86T280-640q-66 0-113 47t-47 113q0 66 47 113t113 47Z"/></svg>'
+    >
+
+    <style>
+
+        /* =========================================================
+           FORCE GLOBAL COLORS
+           ========================================================= */
+
+        :root {
+            color-scheme: dark !important;
+
+            --bg: #0b0d11;
+            --card: #181b21;
+            --card-inner: #111419;
+
+            --text: #e3e3e3;
+            --secondary: #a9abb3;
+
+            --border: #30343d;
+
+            --primary: #a8c7fa;
+            --primary-text: #062e6f;
+
+            --green: #8de6a8;
+            --red: #ffb4ab;
+
+            --loading: #c7d8ff;
+        }
+
+
+        /* =========================================================
+           RESET
+           ========================================================= */
+
+        * {
+            box-sizing: border-box;
+
+            -webkit-tap-highlight-color:
+                transparent;
+
+            -webkit-touch-callout:
+                none;
+
+            user-select: none;
+        }
+
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+
+            min-width: 100%;
+            min-height: 100%;
+
+            margin: 0;
+            padding: 0;
+
+            background:
+                #0b0d11 !important;
+
+            color:
+                #e3e3e3 !important;
+
+            overflow: hidden !important;
+
+            overscroll-behavior:
+                none !important;
+
+            touch-action:
+                none !important;
+
+            -webkit-user-select:
+                none;
+
+            user-select:
+                none;
+
+            -webkit-text-size-adjust:
+                100%;
+        }
+
+
+        body {
+            position: fixed;
+
+            inset: 0;
+
+            width: 100vw;
+            height: 100dvh;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            font-family:
+                Roboto,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background:
+                radial-gradient(
+                    650px 380px at 50% -120px,
+                    rgba(71,112,178,.22),
+                    transparent 70%
+                ),
+                #0b0d11 !important;
+        }
+
+
+        /* =========================================================
+           HIDE ALL SCROLLBARS
+           ========================================================= */
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        *::-webkit-scrollbar {
+            display: none !important;
+
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        html,
+        body,
+        * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
+
+        /* =========================================================
+           FULL PAGE LOADER
+           ========================================================= */
+
+        #pageLoader {
+            position: fixed;
+
+            inset: 0;
+
+            width: 100vw;
+            height: 100dvh;
+
+            z-index: 99999;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                #0b0d11 !important;
+
+            opacity: 1;
+
+            visibility: visible;
+
+            transition:
+                opacity .55s
+                cubic-bezier(.2,.8,.2,1),
+                visibility .55s;
+        }
+
+
+        #pageLoader.hide {
+            opacity: 0;
+
+            visibility: hidden;
+
+            pointer-events: none;
+        }
+
+
+        .loader-container {
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 18px;
+
+            text-align: center;
+        }
+
+
+        .loader-logo {
+            width: 68px;
+            height: 68px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 21px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #314f7c,
+                    #182a45
+                ) !important;
+
+            box-shadow:
+                0 15px 50px
+                rgba(56,101,173,.28);
+
+            animation:
+                loaderFloat 2s
+                ease-in-out infinite;
+        }
+
+
+        .loader-logo svg {
+            width: 35px;
+            height: 35px;
+
+            fill:
+                #e3e3e3 !important;
+        }
+
+
+        @keyframes loaderFloat {
+
+            0%, 100% {
+                transform:
+                    translateY(0)
+                    scale(1);
+            }
+
+            50% {
+                transform:
+                    translateY(-5px)
+                    scale(1.03);
+            }
+        }
+
+
+        .loader-spinner {
+            width: 28px;
+            height: 28px;
+
+            border-radius: 50%;
+
+            border:
+                2px solid
+                rgba(199,216,255,.14);
+
+            border-top-color:
+                #c7d8ff !important;
+
+            border-right-color:
+                #a8c7fa !important;
+
+            animation:
+                spin .7s
+                linear infinite;
+        }
+
+
+        @keyframes spin {
+
+            to {
+                transform:
+                    rotate(360deg);
+            }
+        }
+
+
+        .loader-text {
+            color:
+                #a9abb3 !important;
+
+            font-size: 13px;
+
+            animation:
+                loaderText 1.4s
+                ease-in-out infinite;
+        }
+
+
+        @keyframes loaderText {
+
+            0%, 100% {
+                opacity: .45;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+
+        /* =========================================================
+           MAIN
+           ========================================================= */
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+
+            max-height: 100dvh;
+
+            padding:
+                max(16px, env(safe-area-inset-top))
+                max(16px, env(safe-area-inset-right))
+                max(16px, env(safe-area-inset-bottom))
+                max(16px, env(safe-area-inset-left));
+
+            position: relative;
+
+            z-index: 2;
+
+            opacity: 0;
+
+            transform:
+                translateY(12px)
+                scale(.985);
+
+            transition:
+                opacity .6s
+                cubic-bezier(.2,.8,.2,1),
+                transform .6s
+                cubic-bezier(.2,.8,.2,1);
+        }
+
+
+        .container.ready {
+            opacity: 1;
+
+            transform:
+                translateY(0)
+                scale(1);
+        }
+
+
+        /* =========================================================
+           HEADER
+           ========================================================= */
+
+        .header {
+            text-align: center;
+
+            margin-bottom: 20px;
+        }
+
+
+        .logo {
+            width: 72px;
+            height: 72px;
+
+            margin:
+                0 auto 15px;
+
+            border-radius: 23px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #314f7c,
+                    #182a45
+                ) !important;
+
+            border:
+                1px solid
+                rgba(255,255,255,.08);
+
+            box-shadow:
+                0 17px 52px
+                rgba(56,101,173,.25),
+                inset 0 1px
+                rgba(255,255,255,.14);
+
+            animation:
+                logoFloat 4s
+                ease-in-out infinite,
+                logoGlow 3s
+                ease-in-out infinite;
+        }
+
+
+        .logo svg {
+            width: 39px;
+            height: 39px;
+
+            fill:
+                #e3e3e3 !important;
+
+            filter:
+                drop-shadow(
+                    0 4px 10px
+                    rgba(180,210,255,.2)
+                );
+        }
+
+
+        @keyframes logoGlow {
+
+            0%, 100% {
+                box-shadow:
+                    0 17px 52px
+                    rgba(56,101,173,.22),
+                    inset 0 1px
+                    rgba(255,255,255,.14);
+            }
+
+            50% {
+                box-shadow:
+                    0 20px 68px
+                    rgba(73,128,215,.34),
+                    inset 0 1px
+                    rgba(255,255,255,.18);
+            }
+        }
+
+
+        h1 {
+            margin: 0;
+
+            color:
+                #e3e3e3 !important;
+
+            font-size: 26px;
+
+            line-height: 1.2;
+
+            font-weight: 500;
+
+            letter-spacing:
+                -.6px;
+        }
+
+
+        .subtitle {
+            max-width: 350px;
+
+            margin:
+                8px auto 0;
+
+            color:
+                #a9abb3 !important;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+
+        /* =========================================================
+           CARD
+           ========================================================= */
+
+        .card {
+            position: relative;
+
+            width: 100%;
+
+            padding: 20px;
+
+            border-radius: 27px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #1b1e25,
+                    #15181d
+                ) !important;
+
+            border:
+                1px solid
+                #30343d !important;
+
+            box-shadow:
+                0 25px 70px
+                rgba(0,0,0,.42),
+                inset 0 1px
+                rgba(255,255,255,.035);
+
+            overflow: hidden;
+        }
+
+
+        /* =========================================================
+           KEY AREA
+           ========================================================= */
+
+        .key-box {
+            position: relative;
+
+            width: 100%;
+
+            min-height: 88px;
+
+            padding:
+                15px 54px 15px 16px;
+
+            border-radius: 18px;
+
+            background:
+                #111419 !important;
+
+            border:
+                1px solid
+                #30343d !important;
+
+            overflow: hidden;
+        }
+
+
+        .key-label {
+            margin-bottom: 7px;
+
+            color:
+                #a9abb3 !important;
+
+            font-size: 11px;
+
+            font-weight: 500;
+
+            letter-spacing: .9px;
+        }
+
+
+        .key {
+            color:
+                #e3e3e3 !important;
+
+            font-family:
+                "Roboto Mono",
+                monospace;
+
+            font-size: 17px;
+
+            line-height: 1.45;
+
+            letter-spacing: .5px;
+
+            word-break: break-all;
+
+            opacity: 0;
+
+            transform:
+                translateY(6px);
+
+            transition:
+                opacity .45s ease,
+                transform .45s ease;
+        }
+
+
+        .key.show {
+            opacity: 1;
+
+            transform:
+                translateY(0);
+        }
+
+
+        /* =========================================================
+           KEY LOADING
+           ========================================================= */
+
+        .loading-content {
+            height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+
+            color:
+                #c7d8ff !important;
+
+            font-size: 13px;
+
+            transition:
+                opacity .3s ease,
+                transform .3s ease;
+        }
+
+
+        .loading-content.hide {
+            opacity: 0;
+
+            transform:
+                translateY(-5px);
+        }
+
+
+        .loading-spinner {
+            width: 21px;
+            height: 21px;
+
+            flex: 0 0 auto;
+
+            border-radius: 50%;
+
+            border:
+                2px solid
+                rgba(199,216,255,.16);
+
+            border-top-color:
+                #c7d8ff !important;
+
+            border-right-color:
+                #a8c7fa !important;
+
+            animation:
+                spin .72s
+                linear infinite;
+        }
+
+
+        .loading-text {
+            color:
+                #c7d8ff !important;
+
+            animation:
+                loadingText 1.2s
+                ease-in-out infinite;
+        }
+
+
+        @keyframes loadingText {
+
+            0%, 100% {
+                opacity: .5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+
+        .loading-shimmer {
+            position: absolute;
+
+            inset: 0;
+
+            pointer-events: none;
+
+            background:
+                linear-gradient(
+                    105deg,
+                    transparent 20%,
+                    rgba(168,199,250,.035) 40%,
+                    rgba(168,199,250,.11) 50%,
+                    rgba(168,199,250,.035) 60%,
+                    transparent 80%
+                );
+
+            background-size:
+                250% 100%;
+
+            animation:
+                shimmer 1.7s
+                linear infinite;
+
+            transition:
+                opacity .35s ease;
+        }
+
+
+        .loading-shimmer.hide {
+            opacity: 0;
+        }
+
+
+        @keyframes shimmer {
+
+            from {
+                background-position:
+                    250% 0;
+            }
+
+            to {
+                background-position:
+                    -250% 0;
+            }
+        }
+
+
+        /* =========================================================
+           COPY BUTTON
+           ========================================================= */
+
+        .copy {
+            position: absolute;
+
+            right: 6px;
+            top: 50%;
+
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border: 0;
+
+            border-radius: 50%;
+
+            background:
+                transparent;
+
+            color:
+                #a9abb3;
+
+            cursor: pointer;
+
+            transform:
+                translateY(-50%)
+                scale(.85);
+
+            opacity: 0;
+
+            transition:
+                opacity .35s ease,
+                transform .25s ease,
+                background .2s ease,
+                color .2s ease;
+        }
+
+
+        .copy.show {
+            opacity: 1;
+
+            transform:
+                translateY(-50%)
+                scale(1);
+        }
+
+
+        .copy:hover {
+            background:
+                rgba(168,199,250,.08);
+
+            color:
+                #a8c7fa;
+
+            transform:
+                translateY(-50%)
+                scale(1.08);
+        }
+
+
+        .copy:active {
+            transform:
+                translateY(-50%)
+                scale(.91);
+        }
+
+
+        .copy svg {
+            width: 21px;
+            height: 21px;
+
+            fill:
+                currentColor !important;
+        }
+
+
+        .copy.success {
+            color:
+                #8de6a8 !important;
+
+            animation:
+                copySuccess .35s ease;
+        }
+
+
+        @keyframes copySuccess {
+
+            0% {
+                transform:
+                    translateY(-50%)
+                    scale(.8);
+            }
+
+            60% {
+                transform:
+                    translateY(-50%)
+                    scale(1.15);
+            }
+
+            100% {
+                transform:
+                    translateY(-50%)
+                    scale(1);
+            }
+        }
+
+
+        /* =========================================================
+           DIVIDER
+           ========================================================= */
+
+        .divider {
+            width: 100%;
+
+            height: 1px;
+
+            margin:
+                18px 0;
+
+            background:
+                #30343d !important;
+        }
+
+
+        /* =========================================================
+           INFO
+           ========================================================= */
+
+        .info {
+            display: grid;
+
+            gap: 14px;
+        }
+
+
+        .info-row {
+            min-height: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+        }
+
+
+        .info-label {
+            color:
+                #a9abb3 !important;
+
+            font-size: 13px;
+        }
+
+
+        .info-value {
+            color:
+                #e3e3e3 !important;
+
+            font-size: 13px;
+
+            text-align: right;
+        }
+
+
+        /* =========================================================
+           STATUS
+           ========================================================= */
+
+        .state {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            color:
+                #8de6a8 !important;
+        }
+
+
+        .state-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background:
+                #8de6a8 !important;
+
+            animation:
+                statePulse 1.7s
+                ease-in-out infinite;
+        }
+
+
+        @keyframes statePulse {
+
+            0%, 100% {
+                box-shadow:
+                    0 0 0 0
+                    rgba(141,230,168,.45);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 0 7px
+                    rgba(141,230,168,0);
+            }
+        }
+
+
+        /* =========================================================
+           COUNTDOWN
+           ========================================================= */
+
+        .countdown {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            color:
+                #8de6a8 !important;
+
+            font-family:
+                "Roboto Mono",
+                monospace;
+
+            font-size: 13px;
+
+            font-weight: 500;
+        }
+
+
+        .clock {
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background:
+                #8de6a8 !important;
+
+            animation:
+                clockPulse 1s
+                ease-in-out infinite;
+        }
+
+
+        @keyframes clockPulse {
+
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(.65);
+            }
+        }
+
+
+        .expired {
+            color:
+                #ffb4ab !important;
+        }
+
+
+        .expired .clock {
+            background:
+                #ffb4ab !important;
+
+            animation: none;
+        }
+
+
+        /* =========================================================
+           FOOTER
+           ========================================================= */
+
+        .footer {
+            margin-top: 14px;
+
+            text-align: center;
+
+            color:
+                #676b75 !important;
+
+            font-size: 10.5px;
+        }
+
+
+        /* =========================================================
+           MOBILE
+           ========================================================= */
+
+        @media (max-width: 400px) {
+
+            body {
+                padding: 0;
+            }
+
+
+            .container {
+                padding:
+                    14px;
+            }
+
+
+            .header {
+                margin-bottom:
+                    17px;
+            }
+
+
+            .logo {
+                width: 65px;
+                height: 65px;
+
+                margin-bottom:
+                    13px;
+
+                border-radius:
+                    21px;
+            }
+
+
+            .logo svg {
+                width: 35px;
+                height: 35px;
+            }
+
+
+            h1 {
+                font-size:
+                    23px;
+            }
+
+
+            .subtitle {
+                font-size:
+                    12px;
+
+                margin-top:
+                    7px;
+            }
+
+
+            .card {
+                padding:
+                    17px;
+
+                border-radius:
+                    23px;
+            }
+
+
+            .key {
+                font-size:
+                    14.5px;
+            }
+
+
+            .info {
+                gap:
+                    13px;
+            }
+        }
+
+
+        /* =========================================================
+           NO MOTION PREFERENCE
+           ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration:
+                    .01ms !important;
+
+                animation-iteration-count:
+                    1 !important;
+
+                transition-duration:
+                    .01ms !important;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<!-- =============================================================
+     FULL PAGE LOADING
+     ============================================================= -->
+
+<div id="pageLoader">
+
+    <div class="loader-container">
+
+        <div class="loader-logo">
+
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 -960 960 960">
+
+                <path
+                    fill="#e3e3e3"
+                    d="M223.5-423.5Q200-447 200-480t23.5-56.5Q247-560 280-560t56.5 23.5Q360-513 360-480t-23.5 56.5Q313-400 280-400t-56.5-23.5ZM280-240q-100 0-170-70T40-480q0-100 70-170t170-70q67 0 121.5 33t86.5 87h352l120 120-180 180-80-60-80 60-85-60h-47q-32 54-86.5 87T280-240Zm0-80q56 0 98.5-34t56.5-86h125l58 41 82-61 71 55 75-75-40-40H435q-14-52-56.5-86T280-640q-66 0-113 47t-47 113q0 66 47 113t113 47Z"
+                />
+
+            </svg>
+
+        </div>
+
+
+        <div class="loader-spinner"></div>
+
+
+        <div class="loader-text">
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =============================================================
+     MAIN
+     ============================================================= -->
+
+<div
+    id="app"
+    class="container">
+
+    <div class="header">
+
+        <div class="logo">
+
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 -960 960 960">
+
+                <path
+                    fill="#e3e3e3"
+                    d="M223.5-423.5Q200-447 200-480t23.5-56.5Q247-560 280-560t56.5 23.5Q360-513 360-480t-23.5 56.5Q313-400 280-400t-56.5-23.5ZM280-240q-100 0-170-70T40-480q0-100 70-170t170-70q67 0 121.5 33t86.5 87h352l120 120-180 180-80-60-80 60-85-60h-47q-32 54-86.5 87T280-240Zm0-80q56 0 98.5-34t56.5-86h125l58 41 82-61 71 55 75-75-40-40H435q-14-52-56.5-86T280-640q-66 0-113 47t-47 113q0 66 47 113t113 47Z"
+                />
+
+            </svg>
+
+        </div>
+
+
+        <h1>
+            Generate Key Turbolite
+        </h1>
+
+
+        <div class="subtitle">
+            Generate your key for Vsphone, Ugphone, Turbolite cloud
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="key-box">
+
+            <div class="key-label">
+                KEY
+            </div>
+
+
+            <!-- Loading -->
+
+            <div
+                id="keyLoading"
+                class="loading-content">
+
+                <div class="loading-spinner"></div>
+
+                <span class="loading-text">
+                    Generating your key...
+                </span>
+
+            </div>
+
+
+            <!-- Key -->
+
+            <div
+                id="key"
+                class="key">
+            </div>
+
+
+            <!-- Shimmer -->
+
+            <div
+                id="shimmer"
+                class="loading-shimmer">
+            </div>
+
+
+            <!-- Copy -->
+
+            <button
+                id="copyBtn"
+                class="copy"
+                type="button"
+                aria-label="Copy key">
+
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 -960 960 960">
+
+                    <path
+                        d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-480h80v480h360v80H200Z"
+                    />
+
+                </svg>
+
+            </button>
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <div class="info">
+
+            <div class="info-row">
+
+                <span class="info-label">
+                    Status
+                </span>
+
+                <span
+                    id="state"
+                    class="info-value state">
+
+                    <span class="state-dot"></span>
+
+                    <span id="stateText">
+                        Active
+                    </span>
+
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="info-label">
+                    Time remaining
+                </span>
+
+                <span
+                    id="countdown"
+                    class="countdown">
+
+                    <span class="clock"></span>
+
+                    <span id="timeRemaining">
+                        —
+                    </span>
+
+                </span>
+
+            </div>
+
+
+            <div class="info-row">
+
+                <span class="info-label">
+                    Expires at
+                </span>
+
+                <span
+                    id="expires"
+                    class="info-value">
+
+                    —
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+        Turbolite Key Generator
+    </div>
+
+</div>
+
+
+<script>
+
+    /* =========================================================
+       API
+       ========================================================= */
+
+    const API =
+        "https://api.turbolite.xyz/key/ugphone";
+
+
+    /* =========================================================
+       ELEMENTS
+       ========================================================= */
+
+    const pageLoader =
+        document.getElementById("pageLoader");
+
+    const app =
+        document.getElementById("app");
+
+    const keyLoading =
+        document.getElementById("keyLoading");
+
+    const shimmer =
+        document.getElementById("shimmer");
+
+    const keyElement =
+        document.getElementById("key");
+
+    const copyBtn =
+        document.getElementById("copyBtn");
+
+    const expiresElement =
+        document.getElementById("expires");
+
+    const timeRemainingElement =
+        document.getElementById("timeRemaining");
+
+    const state =
+        document.getElementById("state");
+
+    const stateText =
+        document.getElementById("stateText");
+
+    const countdown =
+        document.getElementById("countdown");
+
+
+    let expiresAt = null;
+    let timer = null;
+
+
+    /* =========================================================
+       PREVENT ZOOM
+       ========================================================= */
+
+    document.addEventListener(
+        "gesturestart",
+        e => e.preventDefault(),
+        { passive: false }
+    );
+
+    document.addEventListener(
+        "gesturechange",
+        e => e.preventDefault(),
+        { passive: false }
+    );
+
+    document.addEventListener(
+        "gestureend",
+        e => e.preventDefault(),
+        { passive: false }
+    );
+
+
+    /* Prevent Ctrl + wheel zoom */
+
+    document.addEventListener(
+        "wheel",
+        e => {
+
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+
+        },
+        {
+            passive: false
+        }
+    );
+
+
+    /* Prevent keyboard zoom */
+
+    document.addEventListener(
+        "keydown",
+        e => {
+
+            if (
+                (e.ctrlKey || e.metaKey) &&
+                (
+                    e.key === "+" ||
+                    e.key === "-" ||
+                    e.key === "=" ||
+                    e.key === "0"
+                )
+            ) {
+
+                e.preventDefault();
+            }
+
+        }
+    );
+
+
+    /* Prevent double tap zoom */
+
+    let lastTouchEnd = 0;
+
+    document.addEventListener(
+        "touchend",
+        e => {
+
+            const now =
+                Date.now();
+
+            if (
+                now - lastTouchEnd <= 300
+            ) {
+
+                e.preventDefault();
+            }
+
+            lastTouchEnd = now;
+
+        },
+        {
+            passive: false
+        }
+    );
+
+
+    /* =========================================================
+       PREVENT SWIPE / SCROLL
+       ========================================================= */
+
+    document.addEventListener(
+        "touchmove",
+        e => {
+
+            e.preventDefault();
+
+        },
+        {
+            passive: false
+        }
+    );
+
+
+    document.addEventListener(
+        "wheel",
+        e => {
+
+            e.preventDefault();
+
+        },
+        {
+            passive: false
+        }
+    );
+
+
+    document.addEventListener(
+        "scroll",
+        () => {
+
+            window.scrollTo(
+                0,
+                0
+            );
+
+        },
+        {
+            passive: true
+        }
+    );
+
+
+    /* =========================================================
+       FORMAT TIME
+       ========================================================= */
+
+    function formatTime(ms) {
+
+        if (ms <= 0) {
+            return "Expired";
+        }
+
+
+        let seconds =
+            Math.floor(ms / 1000);
+
+
+        const days =
+            Math.floor(
+                seconds / 86400
+            );
+
+        seconds %= 86400;
+
+
+        const hours =
+            Math.floor(
+                seconds / 3600
+            );
+
+        seconds %= 3600;
+
+
+        const minutes =
+            Math.floor(
+                seconds / 60
+            );
+
+        seconds %= 60;
+
+
+        if (days > 0) {
+
+            return (
+                `${days}d ` +
+                `${String(hours).padStart(2, "0")}h ` +
+                `${String(minutes).padStart(2, "0")}m ` +
+                `${String(seconds).padStart(2, "0")}s`
+            );
+        }
+
+
+        return (
+            `${String(hours).padStart(2, "0")}:` +
+            `${String(minutes).padStart(2, "0")}:` +
+            `${String(seconds).padStart(2, "0")}`
+        );
+    }
+
+
+    /* =========================================================
+       COUNTDOWN
+       ========================================================= */
+
+    function updateCountdown() {
+
+        if (!expiresAt) {
+            return;
+        }
+
+
+        const remaining =
+            expiresAt - Date.now();
+
+
+        timeRemainingElement.textContent =
+            formatTime(remaining);
+
+
+        if (remaining <= 0) {
+
+            stateText.textContent =
+                "Expired";
+
+            state.classList.add(
+                "expired"
+            );
+
+            countdown.classList.add(
+                "expired"
+            );
+
+            clearInterval(timer);
+
+        } else {
+
+            stateText.textContent =
+                "Active";
+
+            state.classList.remove(
+                "expired"
+            );
+
+            countdown.classList.remove(
+                "expired"
+            );
+        }
+    }
+
+
+    function startCountdown() {
+
+        clearInterval(timer);
+
+        updateCountdown();
+
+        timer =
+            setInterval(
+                updateCountdown,
+                1000
+            );
+    }
+
+
+    /* =========================================================
+       FORMAT DATE
+       ========================================================= */
+
+    function formatDate(date) {
+
+        return new Intl.DateTimeFormat(
+            "en-US",
+            {
+                dateStyle: "medium",
+                timeStyle: "medium"
+            }
+        ).format(date);
+    }
+
+
+    /* =========================================================
+       SHOW KEY
+       ========================================================= */
+
+    function showKey(data) {
+
+        keyElement.textContent =
+            data.key;
+
+
+        expiresAt =
+            new Date(
+                data.expires_at
+            ).getTime();
+
+
+        expiresElement.textContent =
+            formatDate(
+                new Date(expiresAt)
+            );
+
+
+        /*
+         * Loading out
+         */
+
+        keyLoading.classList.add(
+            "hide"
+        );
+
+        shimmer.classList.add(
+            "hide"
+        );
+
+
+        setTimeout(() => {
+
+            keyLoading.style.display =
+                "none";
+
+            shimmer.style.display =
+                "none";
+
+
+            keyElement.classList.add(
+                "show"
+            );
+
+
+            copyBtn.classList.add(
+                "show"
+            );
+
+
+            startCountdown();
+
+        }, 280);
+    }
+
+
+    /* =========================================================
+       GENERATE KEY
+       ========================================================= */
+
+    async function generateKey() {
+
+        try {
+
+            /*
+             * IP CHECK
+             */
+
+            const check =
+                await fetch(
+                    `${API}/ipcheck`,
+                    {
+                        method: "GET",
+
+                        cache:
+                            "no-store"
+                    }
+                );
+
+
+            if (!check.ok) {
+
+                throw new Error(
+                    `IP check failed (${check.status})`
+                );
+            }
+
+
+            /*
+             * CREATE KEY
+             */
+
+            const response =
+                await fetch(
+                    `${API}/create`,
+                    {
+                        method: "GET",
+
+                        cache:
+                            "no-store"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Server error (${response.status})`
+                );
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                !data.success ||
+                !data.key ||
+                !data.expires_at
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Unable to generate key"
+                );
+            }
+
+
+            showKey(data);
+
+
+            /*
+             * Wait for final UI
+             * transition before
+             * removing page loader.
+             */
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        400
+                    )
+            );
+
+
+            app.classList.add(
+                "ready"
+            );
+
+
+            /*
+             * Let the page render
+             * before hiding loader.
+             */
+
+            requestAnimationFrame(() => {
+
+                requestAnimationFrame(() => {
+
+                    pageLoader.classList.add(
+                        "hide"
+                    );
+
+                });
+
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            /*
+             * Keep page usable,
+             * but show error inside
+             * the key area.
+             */
+
+            keyLoading.classList.add(
+                "hide"
+            );
+
+
+            shimmer.classList.add(
+                "hide"
+            );
+
+
+            setTimeout(() => {
+
+                keyLoading.innerHTML = `
+                    <span
+                        style="
+                            color:#ffb4ab;
+                            font-size:13px;
+                        "
+                    >
+                        Unable to generate key
+                    </span>
+                `;
+
+                keyLoading.style.opacity =
+                    "1";
+
+                keyLoading.style.transform =
+                    "none";
+
+            }, 250);
+
+
+            /*
+             * Still reveal the page
+             * after loading is finished.
+             */
+
+            app.classList.add(
+                "ready"
+            );
+
+
+            setTimeout(() => {
+
+                pageLoader.classList.add(
+                    "hide"
+                );
+
+            }, 500);
+        }
+    }
+
+
+    /* =========================================================
+       COPY
+       ========================================================= */
+
+    copyBtn.addEventListener(
+        "click",
+        async () => {
+
+            const value =
+                keyElement.textContent.trim();
+
+
+            if (!value) {
+                return;
+            }
+
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    value
+                );
+
+
+                copyBtn.classList.add(
+                    "success"
+                );
+
+
+                copyBtn.innerHTML = `
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 -960 960 960">
+
+                        <path
+                            d="m382-240-192-192 57-57 135 135 311-311 57 57-368 368Z"
+                        />
+
+                    </svg>
+                `;
+
+
+                setTimeout(() => {
+
+                    copyBtn.classList.remove(
+                        "success"
+                    );
+
+
+                    copyBtn.innerHTML = `
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 -960 960 960">
+
+                            <path
+                                d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-480h80v480h360v80H200Z"
+                            />
+
+                        </svg>
+                    `;
+
+                }, 1500);
+
+            } catch (error) {
+
+                console.error(
+                    "Copy failed:",
+                    error
+                );
+            }
+        }
+    );
+
+
+    /* =========================================================
+       START
+       ========================================================= */
+
+    /*
+     * Wait for DOM + fonts.
+     */
+
+    window.addEventListener(
+        "load",
+        async () => {
+
+            try {
+
+                if (
+                    document.fonts &&
+                    document.fonts.ready
+                ) {
+
+                    await document.fonts.ready;
+                }
+
+            } catch (_) {
+                /* Ignore font errors */
+            }
+
+
+            /*
+             * Generate before
+             * removing full loader.
+             */
+
+            await generateKey();
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
