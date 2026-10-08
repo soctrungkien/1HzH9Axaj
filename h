@@ -62,3 +62,17 @@
 0.0.0.0 doh.zconf.me
 0.0.0.0 interaction.oa.zalo.me
 0.0.0.0 broadcast.api.zaloapp.com
+0.0.0.0 ads.zalo.me
+0.0.0.0 ads-platform.zalo.me
+0.0.0.0 zsentry.zapps.me
+0.0.0.0 log.api.zaloapp.com
+0.0.0.0 doh.zconf.me
+0.0.0.0 srv.adtima.vn
+0.0.0.0 web.api.adtimaserver.vn
+0.0.0.0 adtima-static.zascdn.me
+0.0.0.0 adtima-media.zascdn.me
+0.0.0.0 adtima-common.zascdn.me
+0.0.0.0 49.213.95.86
+0.0.0.0 2001:df0:13:1::109
+0.0.0.0 2001:df0:13:7::2b
+0.0.0.0 2001:df0:13:7::3d
