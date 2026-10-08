@@ -55,3 +55,8 @@
 0.0.0.0 js.driftt.com
 0.0.0.0 dai.google.com
 0.0.0.0 ssl.p.jwpcdn.com
+0.0.0.0 interaction.oa.zalo.me
+0.0.0.0 log.api.zaloapp.com
+0.0.0.0 adtima-media.zascdn.me
+0.0.0.0 zsentry.zapps.me
+0.0.0.0 doh.zconf.me
