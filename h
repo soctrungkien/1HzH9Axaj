@@ -60,3 +60,5 @@
 0.0.0.0 adtima-media.zascdn.me
 0.0.0.0 zsentry.zapps.me
 0.0.0.0 doh.zconf.me
+0.0.0.0 interaction.oa.zalo.me
+0.0.0.0 broadcast.api.zaloapp.com
