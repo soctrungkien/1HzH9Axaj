@@ -13,7 +13,6 @@
 0.0.0.0 securepubads.g.doubleclick.net
 0.0.0.0 ads.microsoft.com
 0.0.0.0 redirector.googlevideo.com
-0.0.0.0 s.youtube.com
 0.0.0.0 sync.kargo.com
 0.0.0.0 pangleglobal.com
 0.0.0.0 s.clarity.ms
