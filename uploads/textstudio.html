@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#141318">
+<title>Text Studio</title>
+<link
+  rel="icon"
+  type="image/svg+xml"
+  href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23141318' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cstyle%3Epath,circle{stroke:%23141318%7Dcircle[fill]{fill:%23141318;stroke:none}%40media(prefers-color-scheme:dark){path,circle{stroke:%23f5f0fa}circle[fill]{fill:%23f5f0fa}}%3C/style%3E%3Cpath d='M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z'/%3E%3Ccircle cx='13.5' cy='6.5' r='.5'/%3E%3Ccircle cx='17.5' cy='10.5' r='.5'/%3E%3Ccircle cx='6.5' cy='12.5' r='.5'/%3E%3Ccircle cx='8.5' cy='7.5' r='.5'/%3E%3C/svg%3E"
+/>
+<script type="importmap">
+{
+  "imports": {
+    "@material/web/": "https://esm.run/@material/web/"
+  }
+}
+</script>
+
+<script type="module">
+  import "@material/web/button/filled-button.js";
+</script>
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #141318;
+  --surface: #1d1b20;
+  --surface-container: #211f26;
+  --outline: #49464f;
+  --text: #e7e1e9;
+  --muted: #c9c3ce;
+  --subtle: #958f9a;
+  --primary: #d0bcff;
+  --on-primary: #381e72;
+  --secondary: #ccc2dc;
+  --radius: 25px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 12% 0%, #d0bcff16, transparent 30rem),
+    radial-gradient(ellipse at 90% 24%, #efb8c80e, transparent 26rem),
+    var(--bg);
+  font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+}
+
+button, textarea {
+  font: inherit;
+}
+
+/* Cấu hình hiển thị chuẩn cho Material Symbols trong md-icon */
+md-icon {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid #49464f88;
+  background: #141318dd;
+  backdrop-filter: blur(22px);
+}
+
+.topbar-inner {
+  width: min(1180px, calc(100% - 36px));
+  min-height: 74px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--on-primary);
+  background: var(--primary);
+  font-size: 23px;
+  font-weight: 900;
+}
+
+.brand-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 17px;
+}
+
+.brand-sub {
+  margin: 3px 0 0;
+  color: var(--subtle);
+  font-size: 12px;
+}
+
+main {
+  width: min(1180px, calc(100% - 36px));
+  margin: auto;
+  padding: 35px 0 60px;
+}
+
+.intro {
+  margin-bottom: 25px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 10px 0;
+  font-size: clamp(29px, 4.3vw, 43px);
+  letter-spacing: -1.2px;
+  line-height: 1.15;
+}
+
+.intro p {
+  max-width: 650px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+md-assist-chip,
+md-filled-button,
+md-outlined-button,
+md-icon-button {
+  --md-sys-color-primary: var(--primary);
+  --md-sys-color-on-primary: var(--on-primary);
+  --md-sys-color-surface: var(--surface);
+  --md-sys-color-on-surface: var(--text);
+  --md-sys-color-outline: var(--outline);
+  --md-filled-button-container-color: var(--primary);
+  --md-filled-button-label-text-color: var(--on-primary);
+  --md-outlined-button-label-text-color: var(--text);
+  --md-outlined-button-outline-color: var(--outline);
+  --md-assist-chip-label-text-color: var(--primary);
+  --md-icon-button-icon-color: var(--primary);
+  font-family: inherit;
+}
+
+.panel {
+  overflow: hidden;
+  border: 1px solid #333139;
+  border-radius: var(--radius);
+  background: #1d1b20f5;
+  box-shadow: 0 12px 34px #0003;
+}
+
+.panel-head {
+  padding: 22px 23px 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.section-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #393247;
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.section-title p {
+  margin: 4px 0 0;
+  color: var(--subtle);
+  font-size: 12px;
+}
+
+#status {
+  color: var(--subtle);
+  font-size: 12px;
+}
+
+.editor-wrap {
+  padding: 0 18px 18px;
+}
+
+.editor {
+  position: relative;
+  min-height: 270px;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid #49454f;
+  border-radius: 21px;
+  background: #101014;
+}
+
+.editor::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 80% 0%, #d0bcff10, transparent 55%);
+}
+
+#effectText,
+#message {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 270px;
+  margin: 0;
+  padding: 24px 25px;
+  border: 0;
+  border-radius: inherit;
+  font: 500 clamp(21px, 3.4vw, 37px)/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 2;
+}
+
+#effectText {
+  z-index: 1;
+  overflow: auto;
+  pointer-events: none;
+  color: white;
+  scrollbar-width: none;
+}
+
+#message {
+  z-index: 2;
+  resize: vertical;
+  outline: none;
+  overflow: auto;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: transparent;
+  background: transparent;
+  scrollbar-width: none;
+}
+
+#effectText::-webkit-scrollbar,
+#message::-webkit-scrollbar {
+  display: none;
+}
+
+#message::selection {
+  background: #d0bcff44;
+}
+
+#message::placeholder {
+  color: transparent;
+}
+
+.char {
+  position: relative;
+  display: inline;
+  color: #fff;
+  will-change: top, opacity, filter;
+}
+
+.char.removing {
+  position: fixed !important;
+  z-index: 99;
+  pointer-events: none;
+  animation: fadeOut 250ms ease-in forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    filter: blur(9px);
+    transform: translateY(-12px);
+  }
+}
+
+#cursor {
+  position: absolute;
+  z-index: 4;
+  width: 2px;
+  height: 1.42em;
+  border-radius: 2px;
+  background: white;
+  box-shadow: 0 0 11px white;
+  pointer-events: none;
+  opacity: 0;
+  animation: cursorBlink 1.05s ease-in-out infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 0; }
+  45%, 60% { opacity: 1; }
+}
+
+.particle {
+  position: fixed;
+  z-index: 100;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: white;
+  box-shadow: 0 0 7px 2px #fff9;
+  animation: particleFly 580ms ease-out forwards;
+}
+
+.particle.star {
+  width: 4px;
+  height: 4px;
+  background: var(--primary);
+  box-shadow: 0 0 12px 3px #d0bcffcc;
+}
+
+@keyframes particleFly {
+  from {
+    opacity: 1;
+    transform: translate(0,0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--dx),var(--dy)) scale(.12) rotate(100deg);
+  }
+}
+
+.editor-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 7px 0;
+}
+
+.hint {
+  color: var(--subtle);
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.output-section {
+  margin-top: 38px;
+}
+
+.output-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 2px 17px;
+}
+
+.output-head h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.output-head p {
+  margin: 6px 0 0;
+  color: var(--subtle);
+  font-size: 13px;
+}
+
+.count-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #302c39;
+  color: var(--primary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#resultsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.style-card {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #333139;
+  border-radius: 19px;
+  background: var(--surface-container);
+  cursor: pointer;
+  transition: transform .18s, background .18s, border-color .18s;
+}
+
+.style-card:hover {
+  transform: translateY(-2px);
+  border-color: #777083;
+  background: #292630;
+}
+
+.style-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.style-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--secondary);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .35px;
+  text-transform: uppercase;
+}
+
+.style-preview {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 13px;
+  background: #151419;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.footer-note {
+  margin-top: 30px;
+  text-align: center;
+  color: #77727d;
+  font-size: 11px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 120;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 18px);
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 32px);
+  padding: 13px 18px;
+  border: 1px solid #6a6380;
+  border-radius: 15px;
+  background: #302b3b;
+  color: #f2eaff;
+  box-shadow: 0 12px 34px #0003;
+  font-size: 13px;
+  transition: opacity .22s, transform .22s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%,0);
+}
+
+@media (max-width: 850px) {
+  #resultsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .intro {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar-inner,
+  main {
+    width: calc(100% - 22px);
+  }
+
+  main {
+    padding-top: 25px;
+  }
+
+  .panel {
+    border-radius: 22px;
+  }
+
+  .panel-head {
+    padding: 18px 15px 13px;
+  }
+
+  #status {
+    display: none;
+  }
+
+  .editor-wrap {
+    padding: 0 10px 13px;
+  }
+
+  .editor,
+  #effectText,
+  #message {
+    min-height: 235px;
+  }
+
+  #effectText,
+  #message {
+    padding: 20px 17px;
+    font-size: clamp(20px, 6vw, 30px);
+  }
+
+  .editor-footer {
+    padding: 12px 3px 0;
+    align-items: stretch;
+  }
+
+  .hint {
+    flex-basis: 100%;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions md-filled-button,
+  .actions md-outlined-button {
+    flex: 1;
+  }
+
+  #resultsGrid {
+    gap: 9px;
+  }
+
+  .style-card {
+    padding: 11px;
+    border-radius: 16px;
+  }
+
+  .style-preview {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+button .material-symbols-outlined {
+  vertical-align: middle;
+}
+
+.icon-button {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: #d0bcff18;
+}
+
+.icon-button:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+</style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette preview-icon"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/></svg></div>
+      <div>
+        <p class="brand-title">Text Studio</p>
+        <p class="brand-sub">Chữ nghệ thuật</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="intro">
+    <div>
+      <div class="eyebrow">✧ Creative text playground</div>
+      <h1>Biến từng chữ thành<br>ma thuật.</h1>
+      <p>
+        Gõ trực tiếp để xem chữ trắng rơi xuống, mờ rồi rõ dần cùng các hạt sáng.
+        Bên dưới là bộ kiểu chữ nghệ thuật và mã hóa có thể sao chép ngay.
+      </p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div class="section-title">
+        <div class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-case-sensitive preview-icon"><path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16"/><path d="M22 9v7"/><path d="M3.304 13h6.392"/><circle cx="18.5" cy="12.5" r="3.5"/></svg></div>
+        <div>
+          <h2>Vùng nhập văn bản</h2>
+          <p>Nhập văn bản tại đây</p>
+        </div>
+      </div>
+      <div id="status">Sẵn sàng nhập chữ</div>
+    </div>
+
+    <div class="editor-wrap">
+      <div class="editor" id="editor">
+        <div id="effectText" aria-hidden="true"></div>
+        <textarea
+          id="message"
+          spellcheck="false"
+          autocomplete="off"
+          autocapitalize="off"
+          aria-label="Gõ chữ để xem hiệu ứng"
+        ></textarea>
+        <span id="cursor" aria-hidden="true"></span>
+      </div>
+
+      <div class="editor-footer">
+        <div class="hint"></div>
+        <div class="actions">
+          <md-filled-button id="clearText" type="button">
+            Xóa
+          </md-filled-button>
+          <md-filled-button id="copyText" type="button">
+            Sao chép
+          </md-filled-button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="output-section">
+    <div class="output-head">
+      <div>
+        <h2>Kiểu chữ nghệ thuật</h2>
+        <p>Chọn thẻ hoặc nút sao chép để lấy kiểu chữ.</p>
+      </div>
+      <div class="count-pill"><span id="countStyles">0</span> kiểu chữ</div>
+    </div>
+    <div id="resultsGrid"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toastMsg">Đã sao chép</span>
+</div>
+
+<script>
+const input = document.getElementById("message");
+const editor = document.getElementById("editor");
+const effectText = document.getElementById("effectText");
+const cursor = document.getElementById("cursor");
+const resultsGrid = document.getElementById("resultsGrid");
+const countStyles = document.getElementById("countStyles");
+const statusText = document.getElementById("status");
+const toast = document.getElementById("toast");
+const toastMsg = document.getElementById("toastMsg");
+
+let previousText = "";
+let charNodes = [];
+let toastTimer = 0;
+
+const mapChars = (s, from, to) => {
+  const map = new Map(
+    Array.from(from).map((char, i) => [
+      char,
+      Array.from(to)[i] ?? char
+    ])
+  );
+
+  return Array.from(s, char => map.get(char) ?? char).join("");
+};
+
+const mapCodePoints = (s, mapping) =>
+  Array.from(s, char => {
+    const code = char.codePointAt(0);
+    const replacement = mapping[code];
+
+    return replacement
+      ? String.fromCodePoint(...replacement)
+      : char;
+  }).join("");
+
+const reverse = s => Array.from(s).reverse().join("");
+
+const wrap = (s, before = "", after = "") =>
+  before + s + after;
+
+const unicodeRange = (s, start, offset) =>
+  Array.from(s, char => {
+    const cp = char.codePointAt(0);
+    return cp >= start[0] && cp <= start[1]
+      ? String.fromCodePoint(cp + offset)
+      : char;
+  }).join("");
+
+const styles = [
+  // Chữ Unicode
+  ["Chữ đậm", s => unicodeRange(s, [65, 90], 119743 - 65)
+    .replace(/[a-z]/g, c =>
+      String.fromCodePoint(c.charCodeAt(0) + 119737 - 97))
+    .replace(/[0-9]/g, c =>
+      String.fromCodePoint(c.charCodeAt(0) + 120734 - 48))],
+
+  ["Chữ nghiêng", s => mapChars(
+    s,
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+    "𝐴𝐵𝐶𝐷𝐸𝐹𝐺𝐻𝐼𝐽𝐾𝐿𝑀𝑁𝑂𝑃𝑄𝑅𝑆𝑇𝑈𝑉𝑊𝑋𝑌𝑍𝑎𝑏𝑐𝑑𝑒𝑓𝑔ℎ𝑖𝑗𝑘𝑙𝑚𝑛𝑜𝑝𝑞𝑟𝑠𝑡𝑢𝑣𝑤𝑥𝑦𝑧"
+  )],
+
+  ["Đậm nghiêng", s => mapChars(
+    s,
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+    "𝑨𝑩𝑪𝑫𝑬𝑭𝑮𝑯𝑰𝑱𝑲𝑳𝑴𝑵𝑶𝑷𝑸𝑹𝑺𝑻𝑼𝑽𝑾𝑿𝒀𝒁𝒂𝒃𝒄𝒅𝒆𝒇𝒈𝒉𝒊𝒋𝒌𝒍𝒎𝒏𝒐𝒑𝒒𝒓𝒔𝒕𝒖𝒗𝒘𝒙𝒚𝒛"
+  )],
+
+  ["Chữ đậm sans", s => mapChars(
+    s,
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵"
+  )],
+
+  ["Chữ monospace", s => mapChars(
+    s,
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    "𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿"
+  )],
+
+  ["Chữ khoanh tròn", s => mapChars(
+    s,
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    "ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓂⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ⓪①②③④⑤⑥⑦⑧⑨"
+  )],
+
+  ["Chữ vuông", s => mapChars(
+    s,
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+    "🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉"
+  )],
+
+  // Chữ nhỏ và biến đổi
+  ["Chữ nhỏ", s => mapCodePoints(s, nmaps.scf)],
+  ["Chữ nhỏ viết hoa", s => mapCodePoints(s, nmaps.sc)],
+  ["Chữ in hoa", s => s.toLocaleUpperCase("vi")],
+  ["Chữ thường", s => s.toLocaleLowerCase("vi")],
+
+  ["Chữ trên", s => mapCodePoints(s, nmaps.s)],
+  ["Chữ dưới", s => mapCodePoints(s, nmaps.sub)],
+
+  ["Chữ gạch giữa", s => Array.from(s).join("\u0336")],
+  ["Chữ gạch trên", s => Array.from(s).join("\u0305")],
+  ["Chữ gạch dưới", s => Array.from(s).join("\u0332")],
+
+  // Đảo chữ
+  ["Chữ đảo ngược", s => reverse(s)],
+  ["Chữ gương", s => mapCodePoints(reverse(s), nmaps.kthmirror)],
+  ["Chữ lộn ngược", s => mapCodePoints(reverse(s), nmaps.kthupside)],
+
+  // Trang trí
+  ["Trái tim", s => [...s].join("♡")],
+  ["Tim hai bên", s => wrap(s, "♡ ", " ♡")],
+  ["Ngôi sao", s => wrap(s, "⋅˚₊‧ ", " ‧₊˚ ⋅")],
+  ["Bướm", s => wrap(s, "ʚ ", " ɞ")],
+  ["Nơ", s => wrap(s, "", " 🎀")],
+  ["Thiên thần", s => wrap(s, "˚₊‧꒰ა ", " ໒꒱ ‧₊˚")],
+  ["Mèo", s => wrap(s, "‧˚꒰🐾꒱༘⋆", "🐾")],
+  ["Thỏ", s => wrap(s, "૮꒰ ˶• ༝ •˶꒱ა", "♡")],
+  ["Hoa văn", s => wrap(s, "*•.¸♡ ", " ♡¸.•*")],
+  ["Ký hiệu tình yêu", s => wrap(s, "ᥫᩣ", "")],
+  ["Ký hiệu nơ", s => wrap(s, "", "౨ৎ")],
+
+  // Khung
+  ["Ngoặc vuông", s => wrap(s, "[", "]")],
+  ["Ngoặc nhọn", s => wrap(s, "{", "}")],
+  ["Ngoặc tròn", s => wrap(s, "(", ")")],
+  ["Ngoặc góc", s => wrap(s, "〈", "〉")],
+  ["Khung sao", s => wrap(s, "★彡 ", " 彡★")],
+  ["Khung hoa", s => wrap(s, "✿ ", " ✿")],
+  ["Khung trăng", s => wrap(s, "☾ ", " ☽")],
+  ["Khung vương miện", s => wrap(s, "♛ ", " ♛")],
+
+  // Định dạng khác
+  ["Chữ toàn khối", s => s.replace(/[^\s]/g, "█")],
+  ["Chữ cách chữ", s => [...s].join(" ")],
+  ["Chữ cách đôi", s => [...s].join("  ")],
+  ["Chữ xen kẽ hoa thường", s =>
+    [...s].map((c, i) =>
+      i % 2 ? c.toLocaleLowerCase("vi") : c.toLocaleUpperCase("vi")
+    ).join("")
+  ]
+];
+
+function graphemes(text) {
+  if (window.Intl && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter("vi", {granularity:"grapheme"});
+    return Array.from(segmenter.segment(text), item => item.segment);
+  }
+  return Array.from(text);
+}
+
+function showToast(message) {
+  toastMsg.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 1900);
+}
+
+async function copyText(text, message) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      temp.style.position = "fixed";
+      temp.style.opacity = "0";
+      document.body.appendChild(temp);
+      temp.select();
+      const ok = document.execCommand("copy");
+      temp.remove();
+      if (!ok) throw new Error("copy unavailable");
+    }
+    showToast(message || "Đã sao chép vào bộ nhớ tạm");
+  } catch {
+    showToast("Trình duyệt chưa cho phép sao chép");
+  }
+}
+
+function makeChar(ch, animate = true) {
+  const span = document.createElement("span");
+  span.className = "char" + (animate ? " entering" : "");
+  span.textContent = ch === "\t" ? "  " : ch;
+  return span;
+}
+
+function burstFrom(element) {
+  if (!element || !element.isConnected) return;
+  const rect = element.getBoundingClientRect();
+  if (!rect.width && !rect.height) return;
+
+  const count = 5 + Math.floor(Math.random() * 3);
+
+  for (let i = 0; i < count; i++) {
+    const particle = document.createElement("span");
+    particle.className = "particle" + (Math.random() > .68 ? " star" : "");
+    particle.style.left = rect.left + rect.width / 2 + "px";
+    particle.style.top = rect.top + rect.height / 2 + "px";
+    particle.style.setProperty("--dx", (Math.random() - .5) * 86 + "px");
+    particle.style.setProperty("--dy", ((Math.random() - .5) * 76 - 12) + "px");
+    document.body.appendChild(particle);
+    particle.addEventListener("animationend", () => particle.remove(), {once:true});
+  }
+}
+
+function animateRemoved(node) {
+  if (!node || !node.isConnected) return;
+  burstFrom(node);
+
+  const rect = node.getBoundingClientRect();
+  const ghost = node.cloneNode(true);
+  ghost.className = "char removing";
+  ghost.style.left = rect.left + "px";
+  ghost.style.top = rect.top + "px";
+  ghost.style.width = rect.width + "px";
+  ghost.style.height = rect.height + "px";
+  ghost.style.margin = "0";
+
+  document.body.appendChild(ghost);
+  ghost.addEventListener("animationend", () => ghost.remove(), {once:true});
+}
+
+function syncText(newText, oldParts, newParts, prefix, suffix) {
+  const oldNodes = charNodes;
+  const nextNodes = new Array(newParts.length);
+  const oldMiddleEnd = oldParts.length - suffix;
+  const newMiddleEnd = newParts.length - suffix;
+
+  for (let i = prefix; i < oldMiddleEnd; i++) {
+    animateRemoved(oldNodes[i]);
+  }
+
+  for (let i = 0; i < prefix; i++) {
+    if (oldNodes[i]) nextNodes[i] = oldNodes[i];
+  }
+
+  for (let i = 0; i < suffix; i++) {
+    const oldIndex = oldParts.length - suffix + i;
+    const newIndex = newParts.length - suffix + i;
+    if (oldNodes[oldIndex]) nextNodes[newIndex] = oldNodes[oldIndex];
+  }
+
+  for (let i = prefix; i < newMiddleEnd; i++) {
+    nextNodes[i] = makeChar(newParts[i], true);
+  }
+
+  const fragment = document.createDocumentFragment();
+  nextNodes.forEach(node => {
+    if (node) fragment.appendChild(node);
+  });
+
+  effectText.replaceChildren(fragment);
+  charNodes = nextNodes;
+  previousText = newText;
+
+  updateCursor();
+  syncScroll();
+
+  for (let i = prefix; i < newMiddleEnd; i++) {
+    burstFrom(charNodes[i]);
+  }
+}
+
+function updateCursor() {
+  const last = charNodes[charNodes.length - 1];
+  const editorRect = editor.getBoundingClientRect();
+
+  if (!last) {
+    cursor.style.left = "25px";
+    cursor.style.top = "24px";
+    cursor.style.height = "1.45em";
+    return;
+  }
+
+  const rect = last.getBoundingClientRect();
+  cursor.style.left = rect.right - editorRect.left + editor.scrollLeft + "px";
+  cursor.style.top = rect.top - editorRect.top + editor.scrollTop + "px";
+  cursor.style.height = Math.max(22, rect.height) + "px";
+}
+
+function syncScroll() {
+  effectText.scrollTop = input.scrollTop;
+  effectText.scrollLeft = input.scrollLeft;
+  requestAnimationFrame(updateCursor);
+}
+
+function renderResults() {
+  const query = input.value || "Hello, world!";
+  countStyles.textContent = styles.length;
+
+  const frag = document.createDocumentFragment();
+
+  styles.forEach(([name, transform]) => {
+    let transformed;
+
+    try {
+      transformed = transform(query);
+    } catch {
+      transformed = query;
+    }
+
+    const card = document.createElement("article");
+    card.className = "style-card";
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", "Sao chép kiểu chữ " + name);
+
+    const top = document.createElement("div");
+    top.className = "style-top";
+
+    const title = document.createElement("span");
+    title.className = "style-name";
+    title.textContent = name;
+
+    const copy = document.createElement("button");
+    copy.className = "icon-button";
+    copy.type = "button";
+    copy.setAttribute("aria-label", "Sao chép kiểu chữ");
+    copy.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy preview-icon"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
+
+    const preview = document.createElement("div");
+    preview.className = "style-preview";
+    preview.textContent = transformed;
+
+    top.append(title, copy);
+    card.append(top, preview);
+
+    const doCopy = () => copyText(transformed, "Đã sao chép: " + name);
+
+    copy.addEventListener("click", event => {
+      event.stopPropagation();
+      doCopy();
+    });
+
+    card.addEventListener("click", doCopy);
+
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        doCopy();
+      }
+    });
+
+    frag.appendChild(card);
+  });
+
+  resultsGrid.replaceChildren(frag);
+}
+
+function onInput() {
+  const newText = input.value;
+  const oldParts = graphemes(previousText);
+  const newParts = graphemes(newText);
+
+  let prefix = 0;
+
+  while (
+    prefix < oldParts.length &&
+    prefix < newParts.length &&
+    oldParts[prefix] === newParts[prefix]
+  ) {
+    prefix++;
+  }
+
+  let suffix = 0;
+
+  while (
+    suffix < oldParts.length - prefix &&
+    suffix < newParts.length - prefix &&
+    oldParts[oldParts.length - 1 - suffix] ===
+    newParts[newParts.length - 1 - suffix]
+  ) {
+    suffix++;
+  }
+
+  syncText(newText, oldParts, newParts, prefix, suffix);
+
+  statusText.textContent = newParts.length
+    ? `Đang nhập · ${newParts.length} ký tự`
+    : "Sẵn sàng nhập chữ";
+
+  renderResults();
+  requestAnimationFrame(syncScroll);
+}
+
+input.addEventListener("input", onInput);
+input.addEventListener("scroll", syncScroll);
+window.addEventListener("resize", syncScroll);
+
+editor.addEventListener("click", () => input.focus());
+
+document.getElementById("clearText").addEventListener("click", () => {
+  input.value = "";
+  onInput();
+  input.focus();
+});
+
+document.getElementById("copyText").addEventListener("click", () => {
+  copyText(input.value, "Đã sao chép nội dung gốc");
+});
+
+input.value = "Hello, world!";
+
+const initial = graphemes(input.value);
+charNodes = initial.map(ch => makeChar(ch, false));
+effectText.replaceChildren(...charNodes);
+previousText = input.value;
+
+renderResults();
+updateCursor();
+</script>
+</body>
+</html>
