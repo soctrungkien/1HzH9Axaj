@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phá MeizuKey</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for Fly/Success Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        meizuBg: '#0f141c',
+                        meizuCard: '#181e29',
+                        meizuCardBorder: '#293548',
+                        meizuBadgeBg: '#151b26',
+                        meizuBadgeText: '#8ca0ba',
+                        meizuBlue: '#2563eb',
+                        meizuBlueHover: '#1d4ed8',
+                        meizuGreen: '#10b981',
+                        meizuGreenBg: '#064e3b22',
+                        meizuGreenBorder: '#05966944',
+                        meizuMuted: '#8b9bb4',
+                        meizuSoftBg: '#1f293d',
+                        meizuOrange: '#f97316',
+                        meizuRed: '#ef4444'
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            background-image: 
+                radial-gradient(at 20% 20%, rgba(37, 99, 235, 0.08) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+            min-height: 100vh;
+        }
+
+        /* Custom Flying Animation */
+        .key-flying-away {
+            animation: flyAway 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+            pointer-events: none;
+        }
+
+        @keyframes flyAway {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0px);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateY(-60px) scale(1.03) rotate(1deg);
+                filter: blur(1px);
+                box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-180px) scale(0.7) rotate(-5deg);
+                filter: blur(8px);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<text class="text-gray-100 flex flex-col min-h-screen">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-meizuCardBorder/60 bg-meizuCard/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-meizuBadgeBg text-meizuGreen border border-meizuGreenBorder shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-meizuGreen mr-2 animate-pulse"></span>
+                    ● MEIZUKEY
+                </span>
+                <h1 class="text-lg font-bold text-white tracking-wide hidden sm:block">
+                    Key Consumer Hub
+                </h1>
+            </div>
+            
+            <!-- Quick Info & Controls -->
+            <div class="flex items-center space-x-3">
+                <label class="relative inline-flex items-center cursor-pointer select-none text-xs text-meizuMuted bg-meizuSoftBg px-3 py-1.5 rounded-lg border border-meizuCardBorder">
+                    <input type="checkbox" id="mockModeToggle" class="sr-only peer" checked>
+                    <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[8px] after:left-[14px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-meizuGreen"></div>
+                    <span class="ml-2 font-medium text-gray-300">Mock Mode</span>
+                </label>
+                <a href="https://github.com/developer-krushna/" target="_blank" rel="noopener noreferrer" class="text-meizuMuted hover:text-white transition-colors p-2 text-sm flex items-center space-x-1">
+                    <i class="fa-brands fa-github text-base"></i>
+                    <span class="text-xs hidden md:inline">developer-krushna</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Key Importer & Stats (5 cols) -->
+        <div class="lg:col-span-5 flex flex-col space-y-6">
+            
+            <!-- Input Card -->
+            <div class="bg-meizuCard border border-meizuCardBorder rounded-2xl p-5 shadow-xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-base font-bold text-white flex items-center">
+                        <i class="fa-solid fa-key text-meizuBlue mr-2"></i> Nhập Danh Sách Key
+                    </h2>
+                    <span class="text-xs text-meizuMuted bg-meizuBadgeBg px-2 py-0.5 rounded border border-meizuCardBorder">1 key / dòng</span>
+                </div>
+
+                <p class="text-xs text-meizuMuted mb-3">
+                    Dán danh sách mã key của bạn vào ô dưới đây. Mỗi dòng tương ứng với 1 key duy nhất.
+                </p>
+
+                <textarea id="keyInput" rows="7" 
+                    placeholder="meizulover_abc123xyz&#10;meizulover_987654321&#10;meizulover_demo_key_99"
+                    class="w-full bg-meizuBg border border-meizuCardBorder rounded-xl p-3 text-sm text-meizuGreen font-mono focus:outline-none focus:border-meizuBlue focus:ring-1 focus:ring-meizuBlue transition-all placeholder-gray-600 resize-none"></textarea>
+
+                <div class="mt-4 flex space-x-2">
+                    <button id="addKeysBtn" onclick="importKeys()" 
+                        class="flex-1 bg-meizuBlue hover:bg-meizuBlueHover text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2 active:scale-95">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Thêm Vào Danh Sách</span>
+                    </button>
+                    <button onclick="clearInput()" 
+                        class="bg-meizuSoftBg hover:bg-gray-700 text-meizuMuted hover:text-white py-2.5 px-3 rounded-xl text-sm transition-all border border-meizuCardBorder" title="Xóa ô nhập">
+                        <i class="fa-solid fa-eraser"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview Card -->
+            <div class="bg-meizuCard border border-meizuCardBorder rounded-2xl p-5 shadow-xl">
+                <h3 class="text-sm font-semibold text-white mb-4 flex items-center">
+                    <i class="fa-solid fa-chart-pie text-meizuGreen mr-2"></i> Thống Kê Key
+                </h3>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-meizuBg/80 p-3 rounded-xl border border-meizuCardBorder/60 text-center">
+                        <div class="text-xs text-meizuMuted mb-1">Tổng Key</div>
+                        <div id="statTotal" class="text-xl font-bold text-white font-mono">0</div>
+                    </div>
+                    <div class="bg-meizuGreenBg p-3 rounded-xl border border-meizuGreenBorder text-center">
+                        <div class="text-xs text-meizuGreen mb-1">Đã Sử Dụng</div>
+                        <div id="statSuccess" class="text-xl font-bold text-meizuGreen font-mono">0</div>
+                    </div>
+                    <div class="bg-red-950/20 p-3 rounded-xl border border-red-900/40 text-center">
+                        <div class="text-xs text-red-400 mb-1">Thất Bại</div>
+                        <div id="statFailed" class="text-xl font-bold text-red-400 font-mono">0</div>
+                    </div>
+                </div>
+
+                <!-- API Info Panel -->
+                <div class="mt-4 p-3 bg-meizuBadgeBg rounded-xl border border-meizuCardBorder/80 text-xs text-meizuMuted space-y-1.5">
+                    <div class="flex justify-between items-center text-[11px] font-mono">
+                        <span class="text-gray-400">Endpoint Verify:</span>
+                        <span class="text-gray-500">.../verify</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[11px] font-mono">
+                        <span class="text-gray-400">Endpoint Consume:</span>
+                        <span class="text-gray-500">.../consume</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Author / Credits Footer -->
+            <div class="text-center text-xs text-meizuMuted py-2 space-y-1">
+                <p>Tiện ích & Việt hoá by <span class="text-gray-300 font-medium">Hihi</span></p>
+                <p class="text-[11px] text-gray-600">make by Hihi with ♥</p>
+            </div>
+        </div>
+
+        <!-- Right Column: Key List & Actions (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col space-y-4">
+            
+            <!-- Action Header Bar -->
+            <div class="bg-meizuCard border border-meizuCardBorder rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-2">
+                    <h2 class="text-base font-bold text-white">Danh Sách Key</h2>
+                    <span id="keyCountBadge" class="bg-meizuSoftBg text-meizuBlue border border-meizuCardBorder text-xs font-mono px-2 py-0.5 rounded-full">0</span>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button id="batchBtn" onclick="consumeAllKeys()" 
+                        class="bg-meizuGreen hover:bg-emerald-600 text-gray-950 font-bold py-2 px-3.5 rounded-xl text-xs transition-all shadow-lg flex items-center space-x-1.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Xài Tất Cả Key</span>
+                    </button>
+                    <button onclick="clearAllKeys()" 
+                        class="bg-meizuSoftBg hover:bg-red-950/40 text-meizuMuted hover:text-red-400 py-2 px-3 rounded-xl text-xs transition-all border border-meizuCardBorder flex items-center space-x-1" title="Xóa toàn bộ">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span class="hidden sm:inline">Xóa hết</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Keys List Container -->
+            <div id="keyListContainer" class="flex-grow min-h-[360px] max-h-[620px] overflow-y-auto space-y-3 pr-1">
+                <!-- Empty State -->
+                <div id="emptyState" class="h-64 flex flex-col items-center justify-center text-center p-6 bg-meizuCard/40 border border-dashed border-meizuCardBorder rounded-2xl">
+                    <div class="w-12 h-12 rounded-full bg-meizuSoftBg flex items-center justify-center text-meizuMuted mb-3">
+                        <i class="fa-solid fa-key text-xl"></i>
+                    </div>
+                    <p class="text-sm text-gray-300 font-medium">Chưa có key nào trong danh sách</p>
+                    <p class="text-xs text-meizuMuted mt-1 max-w-xs">Hãy dán các mã key vào ô bên trái và nhấn "Thêm Vào Danh Sách" để bắt đầu sử dụng.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <script>
+        // Storage keys
+        const STORAGE_KEY = 'lovemeizu_saved_keys';
+        const STATS_KEY = 'lovemeizu_key_stats';
+        const API_URL = 'https://meizulover-key-backend.onrender.com';
+
+        // App State
+        let keysList = [];
+        let stats = { totalConsumed: 0, failed: 0 };
+        let isBatchProcessing = false;
+
+        // On Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            renderKeys();
+            updateStatsUI();
+        });
+
+        // Load persisted data
+        function loadFromStorage() {
+            try {
+                const storedKeys = localStorage.getItem(STORAGE_KEY);
+                if (storedKeys) keysList = JSON.parse(storedKeys);
+
+                const storedStats = localStorage.getItem(STATS_KEY);
+                if (storedStats) stats = JSON.parse(storedStats);
+            } catch (e) {
+                console.error('Error loading state:', e);
+            }
+        }
+
+        // Save state to LocalStorage
+        function saveToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(keysList));
+                localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+            } catch (e) {
+                console.error('Error saving state:', e);
+            }
+        }
+
+        // Add keys from Textarea
+        function importKeys() {
+            const textarea = document.getElementById('keyInput');
+            const rawText = textarea.value;
+            
+            if (!rawText.trim()) {
+                showToast('Vui lòng nhập ít nhất 1 key!', 'warning');
+                return;
+            }
+
+            // Split lines, trim & filter empty
+            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            
+            let addedCount = 0;
+            lines.forEach(keyStr => {
+                // Avoid duplicate keys in current active list
+                if (!keysList.some(k => k.code === keyStr)) {
+                    keysList.push({
+                        id: 'key_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                        code: keyStr,
+                        status: 'idle', // idle, processing, success, failed
+                        errorMessage: ''
+                    });
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveToStorage();
+                renderKeys();
+                textarea.value = '';
+                showToast(`Đã thêm ${addedCount} key vào danh sách!`, 'success');
+            } else {
+                showToast('Tất cả key nhập vào đã tồn tại trong danh sách!', 'info');
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('keyInput').value = '';
+        }
+
+        // Render Keys List UI
+        function renderKeys() {
+            const container = document.getElementById('keyListContainer');
+            const emptyState = document.getElementById('emptyState');
+            const keyCountBadge = document.getElementById('keyCountBadge');
+
+            keyCountBadge.textContent = keysList.length;
+
+            if (keysList.length === 0) {
+                container.innerHTML = '';
+                container.appendChild(emptyState);
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            // Build item nodes
+            container.innerHTML = '';
+            keysList.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.id = `card-${item.id}`;
+                card.className = `bg-meizuCard border border-meizuCardBorder rounded-xl p-3.5 transition-all shadow-md hover:border-gray-600 relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3`;
+
+                // Left: Key details
+                const leftPart = document.createElement('div');
+                leftPart.className = 'flex items-center space-x-3 overflow-hidden';
+                
+                let badgeClass = 'bg-meizuSoftBg text-meizuMuted border-meizuCardBorder';
+                let statusText = 'Chờ dùng';
+                let iconHtml = '<i class="fa-solid fa-clock text-xs"></i>';
+
+                if (item.status === 'processing') {
+                    badgeClass = 'bg-blue-950/40 text-meizuBlue border-blue-800/50';
+                    statusText = 'Đang xử lý...';
+                    iconHtml = '<i class="fa-solid fa-circle-notch fa-spin text-xs"></i>';
+                } else if (item.status === 'success') {
+                    badgeClass = 'bg-meizuGreenBg text-meizuGreen border-meizuGreenBorder';
+                    statusText = 'Thành công';
+                    iconHtml = '<i class="fa-solid fa-check text-xs"></i>';
+                } else if (item.status === 'failed') {
+                    badgeClass = 'bg-red-950/40 text-red-400 border-red-800/50';
+                    statusText = 'Lỗi';
+                    iconHtml = '<i class="fa-solid fa-triangle-exclamation text-xs"></i>';
+                }
+
+                leftPart.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg bg-meizuBg flex items-center justify-center text-gray-400 font-mono text-xs flex-shrink-0 border border-meizuCardBorder/60">
+                        ${index + 1}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-mono text-sm text-meizuGreen font-semibold truncate select-all" title="${escapeHtml(item.code)}">
+                                ${escapeHtml(item.code)}
+                            </span>
+                        </div>
+                        <div class="flex items-center space-x-2 mt-1">
+                            <span class="inline-flex items-center space-x-1 text-[11px] px-2 py-0.5 rounded-full border ${badgeClass}">
+                                ${iconHtml}
+                                <span>${statusText}</span>
+                            </span>
+                            ${item.errorMessage ? `<span class="text-[11px] text-red-400 truncate">${escapeHtml(item.errorMessage)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                // Right: Actions
+                const rightPart = document.createElement('div');
+                rightPart.className = 'flex items-center space-x-2 justify-end flex-shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-meizuCardBorder/40';
+
+                const consumeBtn = document.createElement('button');
+                consumeBtn.className = `bg-meizuBlue hover:bg-meizuBlueHover text-white text-xs font-semibold py-1.5 px-3 rounded-lg transition-all flex items-center space-x-1 shadow active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`;
+                consumeBtn.disabled = item.status === 'processing' || isBatchProcessing;
+                consumeBtn.onclick = () => consumeSingleKey(item.id);
+                consumeBtn.innerHTML = `<i class="fa-solid fa-paper-plane text-[10px]"></i> <span>Sử dụng key</span>`;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = `text-meizuMuted hover:text-red-400 p-1.5 hover:bg-meizuSoftBg rounded-lg transition-all text-xs`;
+                deleteBtn.title = 'Xóa key';
+                deleteBtn.disabled = item.status === 'processing';
+                deleteBtn.onclick = () => deleteKey(item.id);
+                deleteBtn.innerHTML = `<i class="fa-solid fa-xmark text-sm"></i>`;
+
+                rightPart.appendChild(consumeBtn);
+                rightPart.appendChild(deleteBtn);
+
+                card.appendChild(leftPart);
+                card.appendChild(rightPart);
+                container.appendChild(card);
+            });
+        }
+
+        // Consume Single Key Process
+        async function consumeSingleKey(keyId) {
+            const keyObj = keysList.find(k => k.id === keyId);
+            if (!keyObj || keyObj.status === 'processing') return;
+
+            keyObj.status = 'processing';
+            keyObj.errorMessage = '';
+            renderKeys();
+
+            const isMock = document.getElementById('mockModeToggle').checked;
+            let success = false;
+
+            if (isMock) {
+                // Simulate Backend Delay
+                await new Promise(res => setTimeout(res, 700));
+                success = true;
+            } else {
+                // Real Backend Logic matching Java PopupController verify & consume
+                try {
+                    // 1. Verify Key
+                    const verifyRes = await postJson(`${API_URL}/verify`, { key: keyObj.code });
+                    if (verifyRes && verifyRes.success) {
+                        // 2. Consume Key
+                        await postJson(`${API_URL}/consume`, { key: keyObj.code });
+                        success = true;
+                    } else {
+                        keyObj.errorMessage = 'Key không hợp lệ hoặc đã dùng!';
+                    }
+                } catch (err) {
+                    console.error('API Error:', err);
+                    keyObj.errorMessage = 'Lỗi kết nối API!';
+                }
+            }
+
+            if (success) {
+                keyObj.status = 'success';
+                stats.totalConsumed++;
+                updateStatsUI();
+                saveToStorage();
+                renderKeys();
+
+                // Trigger "Key Fly Away" animation before removal
+                animateKeyFly(keyObj.id, () => {
+                    // Remove key from list after fly
+                    keysList = keysList.filter(k => k.id !== keyId);
+                    saveToStorage();
+                    renderKeys();
+                });
+            } else {
+                keyObj.status = 'failed';
+                stats.failed++;
+                updateStatsUI();
+                saveToStorage();
+                renderKeys();
+            }
+        }
+
+        // Batch Consume All Keys
+        async function consumeAllKeys() {
+            if (keysList.length === 0) {
+                showToast('Không có key nào trong danh sách!', 'warning');
+                return;
+            }
+
+            if (isBatchProcessing) return;
+
+            isBatchProcessing = true;
+            document.getElementById('batchBtn').disabled = true;
+            showToast('Bắt đầu xử lý hàng loạt key...', 'info');
+
+            // Copy key IDs array to safely loop while items might get removed
+            const activeKeyIds = keysList.map(k => k.id);
+
+            for (let id of activeKeyIds) {
+                const current = keysList.find(k => k.id === id);
+                if (current && current.status !== 'success') {
+                    await consumeSingleKey(id);
+                    // Slight delay between batch items
+                    await new Promise(r => setTimeout(r, 300));
+                }
+            }
+
+            isBatchProcessing = false;
+            document.getElementById('batchBtn').disabled = false;
+            showToast('Đã hoàn tất xử lý danh sách!', 'success');
+        }
+
+        // Key Fly Away Visual Effect
+        function animateKeyFly(keyId, onComplete) {
+            const cardEl = document.getElementById(`card-${keyId}`);
+            if (!cardEl) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            // Launch colorful confetti particles near the key card
+            const rect = cardEl.getBoundingClientRect();
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+            confetti({
+                particleCount: 25,
+                spread: 60,
+                origin: { x: x, y: y },
+                colors: ['#10b981', '#2563eb', '#38bdf8'],
+                disableForReducedMotion: true
+            });
+
+            // Add CSS animation class
+            cardEl.classList.add('key-flying-away');
+
+            // Wait for animation end
+            setTimeout(() => {
+                if (onComplete) onComplete();
+            }, 750);
+        }
+
+        // Post JSON Helper matching Java Implementation
+        async function postJson(url, data) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error status: ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        // Delete single key
+        function deleteKey(keyId) {
+            keysList = keysList.filter(k => k.id !== keyId);
+            saveToStorage();
+            renderKeys();
+        }
+
+        // Clear all keys
+        function clearAllKeys() {
+            if (keysList.length === 0) return;
+            
+            keysList = [];
+            saveToStorage();
+            renderKeys();
+            showToast('Đã xóa tất cả key khỏi danh sách.', 'info');
+        }
+
+        // Update Stats Display
+        function updateStatsUI() {
+            document.getElementById('statTotal').textContent = keysList.length;
+            document.getElementById('statSuccess').textContent = stats.totalConsumed;
+            document.getElementById('statFailed').textContent = stats.failed;
+        }
+
+        // Toast Helper
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-meizuCard border-meizuCardBorder text-white';
+            let icon = 'fa-circle-info text-meizuBlue';
+
+            if (type === 'success') {
+                bgClass = 'bg-meizuCard border-meizuGreenBorder text-white';
+                icon = 'fa-circle-check text-meizuGreen';
+            } else if (type === 'warning') {
+                bgClass = 'bg-meizuCard border-orange-500/40 text-white';
+                icon = 'fa-triangle-exclamation text-meizuOrange';
+            }
+
+            toast.className = `pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-xl border shadow-2xl ${bgClass} text-xs transform transition-all duration-300 translate-y-4 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i> <span>${escapeHtml(message)}</span>`;
+
+            container.appendChild(toast);
+
+            // Animate In
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
+
+            // Animate Out
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Helper to prevent XSS
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+    </script>
+</body>
+</html>
