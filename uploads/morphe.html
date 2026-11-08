@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Morphe Config Generate</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #101014;
+        color: #fff;
+        font-family: system-ui, sans-serif;
+      }
+
+      .container {
+        width: min(420px, 90%);
+        padding: 28px;
+        border: 1px solid #303039;
+        border-radius: 20px;
+        background: #19191f;
+        text-align: center;
+      }
+
+      h2 {
+        margin: 0 0 10px;
+      }
+
+      p {
+        color: #9999a5;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        border: 0;
+        border-radius: 12px;
+        background: #a78bfa;
+        color: #171322;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+
+      #status {
+        margin-top: 18px;
+        font-size: 13px;
+        color: #aaa;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Morphe Config Generate</h2>
+      <p>Tạo config morphe có toàn bộ nguồn</p>
+
+      <button id="download" onclick="downloadFile()">config.json</button>
+
+      <div id="status">Sẵn sàng</div>
+    </div>
+
+    <script>
+      const URL = "https://morphe-patches.software/data/bundles.json";
+
+      function getBranch(changelogUrl) {
+        if (!changelogUrl) return "main";
+
+        const match = changelogUrl.match(
+          /raw\.githubusercontent\.com\/[^/]+\/[^/]+\/([^/]+)\//,
+        );
+
+        return match ? match[1] : "main";
+      }
+
+      async function downloadFile() {
+        const button = document.getElementById("download");
+        const status = document.getElementById("status");
+
+        button.disabled = true;
+        status.textContent = "Đang tải dữ liệu...";
+
+        try {
+          const response = await fetch(URL);
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          const bundles = data.bundles || [];
+
+          const customBundles = bundles.map((bundle, index) => {
+            const repo = bundle.repo || "";
+            const name =
+              bundle.name || (repo ? repo.split("/").pop() : "Unknown");
+
+            const createdAt = bundle.firstSeen || 0;
+            const updatedAt = bundle.updatedAt ?? createdAt;
+            const branch = getBranch(bundle.changelogUrl);
+
+            return {
+              name,
+              source: `https://raw.githubusercontent.com/${repo}/${branch}/patches-bundle.json`,
+              autoUpdate: true,
+              sortOrder: index + 1,
+              createdAt,
+              updatedAt,
+              prerelease: false,
+              experimentalVersions: false,
+            };
+          });
+
+          const output = {
+            settings: {
+              includeGitHubPatInExports: false,
+              officialBundlePrerelease: false,
+              officialBundleExperimentalVersions: true,
+              customBundles,
+              sourceBundleSortMode: "MANUAL",
+            },
+          };
+
+          const blob = new Blob([JSON.stringify(output, null, 4)], {
+            type: "application/json;charset=utf-8",
+          });
+
+          const url = URL_API(blob);
+          const a = document.createElement("a");
+
+          a.href = url;
+          a.download = "config.json";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+          setTimeout(() => URL_API.revokeObjectURL(url), 1000);
+
+          status.textContent = `✓ Đã tạo config có ${customBundles.length} nguồn thành công!`;
+        } catch (error) {
+          status.textContent = "✕ Lỗi: " + error.message;
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      function URL_API(blob) {
+        return window.URL.createObjectURL(blob);
+      }
+    </script>
+  </body>
+</html>
