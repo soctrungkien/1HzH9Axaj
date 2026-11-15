@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Việt hoá bằng AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f6; --panel:#ffffff; --ink:#16212c; --muted:#5c6b7a; --line:#d3dce5;
+  --accent:#0b6e8a; --accent-ink:#ffffff; --ok:#1f7a4d; --warn:#a15c00; --bad:#b3261e;
+  --code-bg:#f6f8fa;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161d; --panel:#18212b; --ink:#e6edf3; --muted:#93a3b3; --line:#2b3947;
+    --accent:#4cc0df; --accent-ink:#05222b; --ok:#5fd394; --warn:#f0b35a; --bad:#ff8a80;
+    --code-bg:#0f161d; color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 "Be Vietnam Pro",system-ui,sans-serif;padding:24px 16px 64px}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px;font-weight:700}
+.sub{color:var(--muted);margin:0 0 20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 12px;font-weight:600}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:800px){.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+input[type=text],input[type=password],input[type=number],textarea,select{
+  width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;
+  padding:8px 10px;font:inherit}
+textarea{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12.5px;line-height:1.5;resize:vertical;min-height:260px;background:var(--code-bg)}
+textarea.short{min-height:90px;font-family:inherit;font-size:14px;background:var(--panel)}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chk{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--ink);margin:0}
+.chk input{width:auto}
+button,.btn{font:inherit;font-weight:600;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.fhead{display:flex;justify-content:space-between;align-items:end;gap:8px;margin-bottom:4px}
+.fhead label{margin:0}
+.filebtn{font-size:12.5px;color:var(--accent);cursor:pointer;font-weight:500}
+.filebtn input{display:none}
+.stats{display:flex;gap:20px;flex-wrap:wrap;font-size:14px}
+.stats b{font-size:18px;display:block}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:12px}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+#log{font:12px/1.5 "JetBrains Mono",monospace;background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px;height:170px;overflow:auto;white-space:pre-wrap;margin-top:12px}
+#log .e{color:var(--bad)} #log .w{color:var(--warn)} #log .o{color:var(--ok)}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+.note{font-size:12.5px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Việt hoá bằng AI</h1>
+  <p class="sub">Dán string gốc và bản Việt hoá dở dang. Web tự lọc phần chưa dịch, gửi AI dịch từng lô, rồi ghép lại thành file hoàn chỉnh.</p>
+
+  <div class="card">
+    <h2>Kết nối API (tương thích OpenAI)</h2>
+    <div class="grid g2">
+      <div><label for="base">Base URL</label><input type="text" id="base" value="https://api.openai.com/v1" autocomplete="off"></div>
+      <div><label for="key">API key</label><input type="password" id="key" autocomplete="off"></div>
+      <div><label for="model">Model</label><input type="text" id="model" value="gpt-4o-mini" autocomplete="off"></div>
+      <div><label for="proxy">Proxy (URL đích sẽ được nối vào sau <code>?url=</code>)</label><input type="text" id="proxy" value="https://project-33dtd.vercel.app/api/proxy?url=" autocomplete="off"></div>
+      <div class="row" style="align-items:end">
+        <label class="chk"><input type="checkbox" id="useproxy" checked> Gọi API qua proxy</label>
+        <label class="chk"><input type="checkbox" id="remember"> Nhớ API key trên trình duyệt này</label>
+      </div>
+    </div>
+    <details style="margin-top:14px">
+      <summary>Tuỳ chọn nâng cao</summary>
+      <div class="grid g4" style="margin-top:12px">
+        <div><label for="batch">String / lô</label><input type="number" id="batch" value="500" min="1" max="2000"></div>
+        <div><label for="conc">Chạy song song</label><input type="number" id="conc" value="2" min="1" max="8"></div>
+        <div><label for="retries">Thử lại tối đa</label><input type="number" id="retries" value="3" min="0" max="10"></div>
+        <div><label for="temp">Temperature</label><input type="number" id="temp" value="0.2" min="0" max="2" step="0.1"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label class="chk"><input type="checkbox" id="jsonmode" checked> Bật response_format JSON (tắt nếu nhà cung cấp báo lỗi)</label>
+        <label class="chk"><input type="checkbox" id="sameopt" checked> Coi string trong bản vi giống hệt bản gốc là chưa dịch</label>
+        <label class="chk"><input type="checkbox" id="refopt" checked> Lấy mẫu phần app đã dịch làm tham chiếu giọng văn</label>
+      </div>
+      <p class="note">Mỗi lô 500 string cần model trả được output dài (khoảng 15–25k token). Model giới hạn output thấp thì giảm số string / lô xuống 150–250.</p>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Ngữ cảnh app (không bắt buộc nhưng nên điền)</h2>
+    <div class="grid g2">
+      <div><label for="ctx">App làm gì, đối tượng người dùng, giọng văn mong muốn</label>
+        <textarea id="ctx" class="short" placeholder="VD: App quản lý file Android, người dùng phổ thông, giọng thân thiện, ngắn gọn."></textarea></div>
+      <div><label for="gloss">Bảng thuật ngữ (mỗi dòng một cặp: gốc = Việt, hoặc từ giữ nguyên)</label>
+        <textarea id="gloss" class="short" placeholder="Vault = Kho bảo mật&#10;Premium = Cao cấp&#10;Dropbox (giữ nguyên)"></textarea></div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="fhead"><label for="src"><b>String gốc</b> (strings.xml / JSON phẳng hoặc lồng / key=value)</label>
+        <label class="filebtn">Mở file<input type="file" data-target="src"></label></div>
+      <textarea id="src" spellcheck="false"></textarea>
+    </div>
+    <div class="card">
+      <div class="fhead"><label for="vi"><b>String-vi</b> app đã Việt hoá một phần</label>
+        <label class="filebtn">Mở file<input type="file" data-target="vi"></label></div>
+      <textarea id="vi" spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="btnAnalyze">Phân tích</button>
+      <button id="btnRun" class="primary">Dịch phần còn thiếu</button>
+      <button id="btnStop" disabled>Dừng</button>
+    </div>
+    <div class="stats" id="stats" style="margin-top:14px"></div>
+    <div class="bar"><i id="prog"></i></div>
+    <div id="log" role="log" aria-live="polite"></div>
+  </div>
+
+  <div class="card">
+    <div class="fhead"><label for="out"><b>Kết quả string-vi</b> (app dịch sẵn + AI dịch, giữ nguyên cấu trúc file gốc)</label>
+      <span class="row"><button id="btnCopy">Sao chép</button><button id="btnDl">Tải về</button></span></div>
+    <textarea id="out" spellcheck="false" readonly></textarea>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const state = { src: null, vi: null, todo: [], ai: new Map(), stop: false, running: false, ctrl: null };
+
+/* ---------- lưu cài đặt ---------- */
+const SAVE = ['base','model','batch','conc','retries','temp','ctx','gloss','proxy'];
+try {
+  const s = JSON.parse(localStorage.getItem('vh-ai') || '{}');
+  SAVE.forEach(k => { if (s[k] != null) $(k).value = s[k]; });
+  ['jsonmode','sameopt','refopt','useproxy'].forEach(k => { if (s[k] != null) $(k).checked = s[k]; });
+  if (s.key) { $('key').value = s.key; $('remember').checked = true; }
+} catch (e) {}
+function saveCfg() {
+  try {
+    const s = {};
+    SAVE.forEach(k => s[k] = $(k).value);
+    ['jsonmode','sameopt','refopt','useproxy'].forEach(k => s[k] = $(k).checked);
+    if ($('remember').checked) s.key = $('key').value;
+    localStorage.setItem('vh-ai', JSON.stringify(s));
+  } catch (e) {}
+}
+
+/* ---------- parser ---------- */
+const attr = (s, n) => { const m = new RegExp('\\b' + n + '\\s*=\\s*"([^"]*)"').exec(s || ''); return m ? m[1] : null; };
+const hasLetters = s => /\p{L}/u.test(s);
+
+function parseXml(text) {
+  const entries = [];
+  const re = /<(string-array|plurals)\b([^>]*)>([\s\S]*?)<\/\1>|<string\b((?:[^>\/]|\/(?!>))*)>([\s\S]*?)<\/string>/g;
+  let m;
+  while ((m = re.exec(text))) {
+    if (m[1]) {
+      const name = attr(m[2], 'name'); if (!name) continue;
+      const skip = attr(m[2], 'translatable') === 'false';
+      const innerStart = m.index + m[0].indexOf('>') + 1;
+      const ire = /<item\b([^>]*)>([\s\S]*?)<\/item>/g; let im, i = 0;
+      while ((im = ire.exec(m[3]))) {
+        const key = name + '[' + (m[1] === 'plurals' ? attr(im[1], 'quantity') : i) + ']'; i++;
+        const start = innerStart + im.index + im[0].indexOf('>') + 1;
+        entries.push({ key, value: im[2], start, end: start + im[2].length, skip });
+      }
+    } else {
+      const name = attr(m[4], 'name'); if (!name) continue;
+      const start = m.index + m[0].indexOf('>') + 1;
+      entries.push({ key: name, value: m[5], start, end: start + m[5].length, skip: attr(m[4], 'translatable') === 'false' });
+    }
+  }
+  return {
+    fmt: 'xml', ext: 'xml', entries,
+    build(map) {
+      let out = text;
+      for (const e of [...entries].sort((a, b) => b.start - a.start)) {
+        const v = map.has(e.key) ? map.get(e.key) : e.value;
+        out = out.slice(0, e.start) + v + out.slice(e.end);
+      }
+      return out;
+    }
+  };
+}
+
+function parseJson(text) {
+  const root = JSON.parse(text), entries = [], SEP = '\u241F';
+  (function walk(node, path) {
+    if (typeof node === 'string') entries.push({ key: path.join(SEP), value: node, path, skip: false });
+    else if (node && typeof node === 'object') for (const k of Object.keys(node)) walk(node[k], path.concat(k));
+  })(root, []);
+  return {
+    fmt: 'json', ext: 'json', entries,
+    build(map) {
+      const copy = JSON.parse(text);
+      for (const e of entries) {
+        if (!map.has(e.key)) continue;
+        let o = copy; for (let i = 0; i < e.path.length - 1; i++) o = o[e.path[i]];
+        o[e.path[e.path.length - 1]] = map.get(e.key);
+      }
+      return JSON.stringify(copy, null, 2);
+    }
+  };
+}
+
+function parseProps(text) {
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const lines = text.split(/\r?\n/), entries = [];
+  lines.forEach((ln, i) => {
+    if (/^\s*[#!]/.test(ln)) return;
+    const m = /^(\s*)([^\s=:][^=:]*?)(\s*[=:]\s*)(.*)$/.exec(ln);
+    if (m) entries.push({ key: m[2], value: m[4], line: i, head: m[1] + m[2] + m[3], skip: false });
+  });
+  return {
+    fmt: 'props', ext: 'properties', entries,
+    build(map) {
+      const out = lines.slice();
+      for (const e of entries) if (map.has(e.key)) out[e.line] = e.head + map.get(e.key);
+      return out.join(eol);
+    }
+  };
+}
+
+function parseAny(text) {
+  const t = text.trim();
+  if (!t) return { fmt: null, entries: [], build: () => '' };
+  if (t[0] === '<') return parseXml(text);
+  if (t[0] === '{' || t[0] === '[') return parseJson(text);
+  return parseProps(text);
+}
+
+/* ---------- kiểm tra placeholder ---------- */
+const PH = /%(?:\d+\$)?[-+0#,]*\d*(?:\.\d+)?[sdifuxXcgeEGo@]|%%|\$\{[^}]*\}|\{\{[^}]*\}\}|\{[^{}]*\}|<\/?[a-zA-Z][^>]*>|<!\[CDATA\[|\]\]>|&(?:#\d+|#x[0-9a-fA-F]+|[a-zA-Z]+);|\\[nrt'"@?]|@string\/\w+|\?attr\/\w+|https?:\/\/[^\s"'<>)]+/g;
+function tokens(s) {
+  return (s.match(PH) || []).filter(t => t[0] !== '{' || t[1] === '{' || /^\{[\w.\-]*\}$/.test(t)).sort().join('\u0001');
+}
+const valid = (src, out) => typeof out === 'string' && (src.trim() === '' || out.trim() !== '') && tokens(src) === tokens(out);
+
+/* ---------- phân tích ---------- */
+function analyze() {
+  try { state.src = parseAny($('src').value); } catch (e) { log('Không đọc được string gốc: ' + e.message, 'e'); return false; }
+  try { state.vi = parseAny($('vi').value); } catch (e) { log('Không đọc được string-vi: ' + e.message, 'e'); return false; }
+  if (!state.src.entries.length) { log('Chưa có string gốc nào để xử lý.', 'e'); return false; }
+  const viMap = new Map(state.vi.entries.map(e => [e.key, e.value]));
+  const same = $('sameopt').checked;
+  state.viMap = viMap;
+  state.needs = e => {
+    if (e.skip || !hasLetters(e.value) || e.value.trim() === '') return false;
+    const v = viMap.get(e.key);
+    return v == null || v.trim() === '' || (same && v === e.value);
+  };
+  state.todo = state.src.entries.filter(state.needs);
+  const total = state.src.entries.length;
+  const need = state.todo.length;
+  const batches = Math.ceil(need / Math.max(1, +$('batch').value || 500));
+  $('stats').innerHTML =
+    `<div><b>${total}</b>tổng string gốc</div>` +
+    `<div><b>${total - need}</b>đã có / không cần dịch</div>` +
+    `<div><b>${need}</b>cần AI dịch</div>` +
+    `<div><b>${batches}</b>lô</div>`;
+  refreshOutput();
+  return true;
+}
+
+function finalMap() {
+  const map = new Map();
+  for (const e of state.src.entries) {
+    let v = e.value;
+    if (state.needs(e)) { if (state.ai.has(e.key)) v = state.ai.get(e.key); }
+    else if (!e.skip && state.viMap.has(e.key) && state.viMap.get(e.key).trim() !== '') v = state.viMap.get(e.key);
+    map.set(e.key, v);
+  }
+  return map;
+}
+function refreshOutput() { $('out').value = state.src.build(finalMap()); }
+
+/* ---------- system prompt ---------- */
+function buildSystem() {
+  const ctx = $('ctx').value.trim();
+  const gloss = $('gloss').value.trim();
+  let p = `You are a senior software localization translator. Your job is to translate user-interface and app strings into natural, polished Vietnamese (vi-VN). The source language is usually English but may be any language; detect it yourself.
+
+# INPUT / OUTPUT CONTRACT
+- The user message is a single JSON object that maps an id ("1", "2", ...) to one source string.
+- Reply with ONE valid JSON object only: the same ids mapped to the Vietnamese translations. No markdown, no code fences, no comments, no text before or after the JSON.
+- Every id in the input must appear exactly once in the output. Never skip, merge, split, reorder, add, or rename ids.
+- The values are JSON-encoded. After JSON-decoding, the strings contain raw characters from an app resource file, so a literal backslash followed by n (the two characters \\n) is NOT a line break; it is an escape sequence that must survive unchanged. Encode your output properly so that, once decoded, those exact characters are preserved.
+
+# WHAT MUST STAY EXACTLY AS IT IS
+Copy these verbatim, character for character, in the same count and (when the grammar allows) the same relative order:
+- printf / Java / Android format specifiers: %s %d %f %1$s %2$d %.2f %5.1f %% %n %x %c %@ and similar.
+- Named or numbered placeholders: {0} {1} {name} {{name}} \${var} #{var} %(name)s.
+- Escape sequences: \\n \\t \\r \\' \\" \\@ \\? and \\uXXXX.
+- XML/HTML entities: &amp; &lt; &gt; &quot; &apos; &#8230; &#160; and similar.
+- Markup and tags: <b>, </b>, <i>, <u>, <a href="...">, <br/>, <font ...>, <xliff:g ...>, <![CDATA[ ... ]]>. Translate only the human-readable text between tags; never alter, translate, or drop tags and attributes. Keep the text inside <xliff:g> untouched.
+- Resource references: @string/..., ?attr/..., @android:string/...
+- URLs, e-mail addresses, file names and paths, package names, class names, hex colors, shell commands, code, regex, JSON keys, version numbers, keyboard shortcuts such as Ctrl+C.
+- ICU / plural syntax keywords (plural, select, one, other, few, many, zero). You may translate the human text inside the branches, but keep the syntax intact.
+- Leading and trailing whitespace, line breaks, trailing punctuation such as "...", an ellipsis character, ":" or "!". If the source ends with "…", the translation ends with "…".
+
+# WHAT NOT TO TRANSLATE
+- Brand, product, company and service names (Google, Android, Wi-Fi, Bluetooth, Telegram, YouTube, GitHub ...), proper nouns, and the app's own name.
+- Well-known technical acronyms and terms people normally keep in Vietnamese UI: USB, GPS, NFC, VPN, DNS, IP, API, URL, PIN, OTP, SMS, MMS, QR, SSID, APK, ROM, RAM, CPU, GPU, HDR, JPEG, PNG, PDF, ZIP, Root, Bluetooth, Wi-Fi.
+- Strings that contain no translatable words (numbers, symbols, placeholders only, emoji): return them unchanged.
+- Strings that are already Vietnamese: return them unchanged.
+- An empty string stays an empty string.
+
+# STYLE AND TONE
+- Write like a native Vietnamese product team: natural, concise, idiomatic. Never translate word for word, and never leave literal English syntax in the sentence.
+- UI space is limited. Prefer short, common words. Buttons, menu items and tabs use short imperative verbs or noun phrases (Lưu, Hủy, Xóa, Chia sẻ, Thử lại, Cài đặt).
+- Address the user as "bạn". Avoid "quý khách", "người dùng" as a form of address, and avoid "chúng tôi" unless the source clearly speaks as a company; the app/system may be "ứng dụng".
+- Use a friendly, neutral, polite register. No slang, no teen-speak, no excessive formality, no Sino-Vietnamese terms when a plain everyday word exists.
+- Capitalisation follows Vietnamese convention: capitalise only the first word and proper nouns (sentence case), even when the English source uses Title Case. Keep ALL-CAPS source strings in ALL CAPS.
+- Use correct Vietnamese diacritics and the standard (new-style) tone mark placement used consistently across the batch (e.g. "hòa", "thủy", "quả"). Use Vietnamese punctuation and spacing; do not add a space before "," "." "!" "?" ":" ";".
+- Do not add or remove information, do not explain, do not add quotation marks, notes or translator comments.
+- Vietnamese has no grammatical plural or gender: avoid unnecessary "các/những" and keep quantity placeholders in natural positions. Keep placeholders where the sentence needs them even if the word order changes.
+- Error messages state what happened and what to do in a neutral tone; do not apologise more than the source does.
+- Keep the same term for the same concept across the whole batch. Be consistent with the glossary and reference translations below.
+- If a string is ambiguous (e.g. "Open", "Set", "Clear", "Back"), pick the meaning that fits a UI control or setting.
+
+# STANDARD TERMINOLOGY
+Settings = Cài đặt; Install = Cài đặt; Uninstall = Gỡ cài đặt; Cancel = Hủy; OK = OK; Yes/No = Có/Không; Delete/Remove = Xóa; Save = Lưu; Edit = Chỉnh sửa; Search = Tìm kiếm; Filter = Lọc; Sort = Sắp xếp; Download = Tải xuống; Upload = Tải lên; Import/Export = Nhập/Xuất; Send = Gửi; Share = Chia sẻ; Copy = Sao chép; Paste = Dán; Cut = Cắt; Select all = Chọn tất cả; Refresh = Làm mới; Retry = Thử lại; Next = Tiếp theo; Back = Quay lại; Continue = Tiếp tục; Skip = Bỏ qua; Done = Xong; Close = Đóng; Open = Mở; Confirm = Xác nhận; Apply = Áp dụng; Reset = Đặt lại; Restore = Khôi phục; Backup = Sao lưu; Update = Cập nhật; Upgrade = Nâng cấp; Enable/Disable = Bật/Tắt; On/Off = Bật/Tắt; Allow/Deny = Cho phép/Từ chối; Permission = Quyền; Notification = Thông báo; Account = Tài khoản; Profile = Hồ sơ; Sign in/Log in = Đăng nhập; Sign out/Log out = Đăng xuất; Sign up/Register = Đăng ký; Password = Mật khẩu; Username = Tên người dùng; Email = Email; Privacy = Quyền riêng tư; Security = Bảo mật; Language = Ngôn ngữ; Theme = Giao diện; Dark mode = Chế độ tối; Light mode = Chế độ sáng; Storage = Bộ nhớ; Battery = Pin; Network = Mạng; Connection = Kết nối; Server = Máy chủ; Cloud = Đám mây; File = Tệp; Folder = Thư mục; Image/Photo = Hình ảnh/Ảnh; Video = Video; Audio = Âm thanh; Message = Tin nhắn; Contact = Liên hệ; Call = Cuộc gọi; Error = Lỗi; Warning = Cảnh báo; Success = Thành công; Failed = Thất bại; Loading = Đang tải…; Please wait = Vui lòng chờ; Premium/Pro = Cao cấp/Pro; Free = Miễn phí; Subscription = Gói đăng ký; Purchase/Buy = Mua; Price = Giá; Trial = Dùng thử; About = Giới thiệu; Help = Trợ giúp; Feedback = Phản hồi; Terms of Service = Điều khoản dịch vụ; Privacy Policy = Chính sách quyền riêng tư; Version = Phiên bản; Advanced = Nâng cao; Default = Mặc định; Custom = Tùy chỉnh; Automatic = Tự động; Manual = Thủ công; Unknown = Không rõ; Unavailable = Không khả dụng; Required = Bắt buộc; Optional = Tùy chọn; Recommended = Khuyến nghị; Beta = Beta.
+
+# BEFORE YOU ANSWER, SELF-CHECK
+1. The output parses as a single JSON object with exactly the input ids.
+2. Every placeholder, escape, entity, tag and URL in each source appears unchanged in its translation.
+3. No string is left in English unless it is a name, acronym or code that should stay.
+4. Terminology and tone are consistent across the whole batch.`;
+
+  if (ctx) p += `\n\n# APP CONTEXT (from the client)\n${ctx}`;
+  if (gloss) p += `\n\n# CLIENT GLOSSARY (mandatory; overrides the standard terminology above)\n${gloss}\nA line like "Term (giữ nguyên)" means keep that term untranslated.`;
+
+  if ($('refopt').checked && state.vi && state.src) {
+    const srcMap = new Map(state.src.entries.map(e => [e.key, e.value]));
+    const pairs = [];
+    for (const [k, v] of state.viMap) {
+      const s = srcMap.get(k);
+      if (s && v && v !== s && hasLetters(v) && s.length < 120 && valid(s, v)) pairs.push([s, v]);
+    }
+    const step = Math.max(1, Math.floor(pairs.length / 30));
+    const sample = pairs.filter((_, i) => i % step === 0).slice(0, 30);
+    if (sample.length) {
+      p += `\n\n# REFERENCE TRANSLATIONS ALREADY APPROVED BY THE APP TEAM\nMatch their vocabulary, tone and phrasing style. Do not include these in your output.\n` +
+        sample.map(([s, v]) => JSON.stringify({ source: s, vi: v })).join('\n');
+    }
+  }
+  return p;
+}
+
+/* ---------- gọi API ---------- */
+function endpoint() {
+  let b = $('base').value.trim().replace(/\/+$/, '');
+  const url = /\/chat\/completions$/.test(b) ? b : b + '/chat/completions';
+  const px = $('proxy').value.trim();
+  return $('useproxy').checked && px ? px + encodeURIComponent(url) : url;
+}
+
+// Đọc phản hồi: JSON thường, hoặc SSE ("data: {...}") nếu server/proxy vẫn ép stream
+function extractContent(raw) {
+  const t = raw.trim();
+  if (!/^(data:|event:)/.test(t)) {
+    const d = JSON.parse(t);
+    if (d.error) throw new Error(typeof d.error === 'string' ? d.error : (d.error.message || JSON.stringify(d.error)));
+    return d.choices?.[0]?.message?.content ?? d.choices?.[0]?.text ?? '';
+  }
+  let out = '';
+  for (const line of t.split(/\r?\n/)) {
+    if (!line.startsWith('data:')) continue;
+    const s = line.slice(5).trim();
+    if (!s || s === '[DONE]') continue;
+    try {
+      const c = JSON.parse(s).choices?.[0];
+      out += c?.delta?.content ?? c?.message?.content ?? c?.text ?? '';
+    } catch (e) {}
+  }
+  return out;
+}
+async function callAI(payload, signal) {
+  const body = {
+    model: $('model').value.trim(),
+    temperature: +$('temp').value,
+    stream: false,
+    messages: [
+      { role: 'system', content: state.system },
+      { role: 'user', content: 'Translate these ' + Object.keys(payload).length + ' strings to Vietnamese. Return only the JSON object.\n' + JSON.stringify(payload) }
+    ]
+  };
+  if ($('jsonmode').checked) body.response_format = { type: 'json_object' };
+  const res = await fetch(endpoint(), {
+    method: 'POST', signal,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + $('key').value.trim() },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = new Error('HTTP ' + res.status + ': ' + (await res.text()).slice(0, 220));
+    err.status = res.status; throw err;
+  }
+  return extractContent(await res.text());
+}
+
+function parseReply(content) {
+  let t = content.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  try {
+    const a = t.indexOf('{'), b = t.lastIndexOf('}');
+    const o = JSON.parse(t.slice(a, b + 1));
+    if (o && typeof o === 'object') return o;
+  } catch (e) {}
+  // cứu dữ liệu khi JSON bị cắt giữa chừng
+  const out = {}, re = /"(\d+)"\s*:\s*"((?:[^"\\]|\\.)*)"/g; let m;
+  while ((m = re.exec(t))) { try { out[m[1]] = JSON.parse('"' + m[2] + '"'); } catch (e) {} }
+  return out;
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function runBatch(batch, no, total) {
+  let remaining = batch.slice();
+  const retries = Math.max(0, +$('retries').value || 0);
+  for (let attempt = 0; attempt <= retries && remaining.length && !state.stop; attempt++) {
+    try {
+      const payload = {};
+      remaining.forEach((e, i) => payload[i + 1] = e.value);
+      const reply = parseReply(await callAI(payload, state.ctrl.signal));
+      const next = [];
+      remaining.forEach((e, i) => {
+        const out = reply[i + 1];
+        if (valid(e.value, out)) state.ai.set(e.key, out); else next.push(e);
+      });
+      const okCount = remaining.length - next.length;
+      log(`Lô ${no}/${total}${attempt ? ' (lần ' + (attempt + 1) + ')' : ''}: nhận ${okCount}/${remaining.length} string hợp lệ`, next.length ? 'w' : 'o');
+      remaining = next;
+      refreshOutput(); updateProgress();
+    } catch (err) {
+      if (state.stop) return remaining.length;
+      log(`Lô ${no}/${total}: ${err.message}`, 'e');
+      if ([400, 401, 403, 404].includes(err.status) && attempt >= 1 || [401, 403, 404].includes(err.status)) { state.stop = true; state.ctrl.abort(); return remaining.length; }
+      await sleep(1500 * (attempt + 1));
+    }
+  }
+  return remaining.length;
+}
+
+function updateProgress() {
+  const done = state.todo.filter(e => state.ai.has(e.key)).length;
+  $('prog').style.width = (state.todo.length ? done / state.todo.length * 100 : 100) + '%';
+}
+
+async function run() {
+  if (state.running) return;
+  if (!$('key').value.trim()) { log('Chưa nhập API key.', 'e'); return; }
+  if (!analyze()) return;
+  saveCfg();
+  const pending = state.todo.filter(e => !state.ai.has(e.key));
+  if (!pending.length) { log('Không còn string nào cần dịch.', 'o'); updateProgress(); return; }
+
+  state.system = buildSystem();
+  state.stop = false; state.running = true; state.ctrl = new AbortController();
+  $('btnRun').disabled = true; $('btnStop').disabled = false;
+
+  const size = Math.max(1, +$('batch').value || 500);
+  const batches = [];
+  for (let i = 0; i < pending.length; i += size) batches.push(pending.slice(i, i + size));
+  log(`Bắt đầu: ${pending.length} string, ${batches.length} lô, mỗi lô tối đa ${size}.`);
+
+  let next = 0, failed = 0;
+  const workers = Array.from({ length: Math.min(Math.max(1, +$('conc').value || 1), batches.length) }, async () => {
+    while (!state.stop && next < batches.length) {
+      const i = next++;
+      failed += await runBatch(batches[i], i + 1, batches.length);
+    }
+  });
+  await Promise.all(workers);
+
+  state.running = false;
+  $('btnRun').disabled = false; $('btnStop').disabled = true;
+  refreshOutput(); updateProgress();
+  const left = state.todo.filter(e => !state.ai.has(e.key)).length;
+  if (state.stop) log('Đã dừng. Bấm "Dịch phần còn thiếu" để chạy tiếp phần chưa dịch.', 'w');
+  else if (left) log(`Xong nhưng còn ${left} string lỗi/chưa hợp lệ (đang giữ nguyên bản gốc). Bấm dịch lại để thử tiếp.`, 'w');
+  else log('Hoàn tất. Toàn bộ string đã được Việt hoá.', 'o');
+}
+
+/* ---------- UI ---------- */
+function log(msg, cls) {
+  const d = document.createElement('div');
+  if (cls) d.className = cls;
+  d.textContent = new Date().toLocaleTimeString('vi-VN') + '  ' + msg;
+  $('log').appendChild(d); $('log').scrollTop = 1e9;
+}
+function resetAI() { state.ai.clear(); $('prog').style.width = '0'; }
+
+$('btnAnalyze').onclick = () => { resetAI(); if (analyze()) log('Đã phân tích xong.', 'o'); };
+$('btnRun').onclick = run;
+$('btnStop').onclick = () => { state.stop = true; state.ctrl && state.ctrl.abort(); };
+$('btnCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('out').value); log('Đã sao chép kết quả.', 'o'); }
+  catch (e) { $('out').select(); document.execCommand('copy'); }
+};
+$('btnDl').onclick = () => {
+  const ext = state.src?.ext || 'txt';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([$('out').value], { type: 'text/plain;charset=utf-8' }));
+  a.download = 'strings-vi.' + ext; a.click(); URL.revokeObjectURL(a.href);
+};
+document.querySelectorAll('input[type=file]').forEach(inp => inp.onchange = async () => {
+  const f = inp.files[0]; if (!f) return;
+  $(inp.dataset.target).value = await f.text(); resetAI(); inp.value = '';
+});
+['src', 'vi', 'sameopt'].forEach(id => $(id).addEventListener('input', resetAI));
+[...SAVE, 'jsonmode', 'sameopt', 'refopt', 'remember', 'key'].forEach(id => $(id).addEventListener('change', saveCfg));
+</script>
+</body>
+</html>
