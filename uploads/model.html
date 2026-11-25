@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Compatible Models Fetcher</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar cho phần Raw JSON và Table */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col">
+
+    <!-- Header -->
+    <header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-600/20">
+                    <i data-lucide="boxes" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg tracking-tight leading-tight">API Models Explorer</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Truy xuất & lưu trữ danh sách từ endpoint <code class="font-mono text-emerald-600 dark:text-emerald-400">/v1/models</code></p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Nút chuyển đổi Dark/Light Mode -->
+                <button id="themeToggle" type="button" title="Đổi giao diện Sáng/Tối" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition">
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+
+        <!-- Card Cấu hình kết nối -->
+        <section class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-6">
+            <form id="fetchForm" class="space-y-5">
+                <!-- Chọn nhanh nhà cung cấp (Presets) -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2.5">
+                        Chọn nhanh Endpoint phổ biến
+                    </label>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-url="https://api.openai.com/v1" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                            OpenAI
+                        </button>
+                        <button type="button" data-url="http://localhost:11434/v1" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                            Ollama (Local)
+                        </button>
+                        <button type="button" data-url="http://localhost:1234/v1" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                            LM Studio (Local)
+                        </button>
+                        <button type="button" data-url="https://openrouter.ai/api/v1" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                            OpenRouter
+                        </button>
+                        <button type="button" data-url="https://api.groq.com/openai/v1" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                            Groq
+                        </button>
+                        <button type="button" data-url="https://api.deepseek.com/v1" class="preset-btn px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition">
+                            DeepSeek
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inputs Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <!-- Base URL -->
+                    <div class="md:col-span-6">
+                        <label for="baseUrl" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Base URL <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i data-lucide="globe" class="w-4 h-4"></i>
+                            </div>
+                            <input type="url" id="baseUrl" required
+                                value="https://api.openai.com/v1"
+                                placeholder="https://api.openai.com/v1"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition">
+                        </div>
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                            Hệ thống sẽ tự động gọi tới <span id="previewEndpoint" class="font-mono text-slate-700 dark:text-slate-300">https://api.openai.com/v1/models</span>
+                        </p>
+                    </div>
+
+                    <!-- API Key -->
+                    <div class="md:col-span-6">
+                        <label for="apiKey" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            API Key <span class="text-xs font-normal text-slate-400">(Tùy chọn nếu dùng Local)</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <i data-lucide="key-round" class="w-4 h-4"></i>
+                            </div>
+                            <input type="password" id="apiKey"
+                                placeholder="sk-..."
+                                autocomplete="off"
+                                class="w-full pl-10 pr-11 py-2.5 text-sm font-mono rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition">
+                            <button type="button" id="toggleKeyBtn" title="Hiện/Ẩn API Key"
+                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                                <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                            Key chỉ được xử lý trực tiếp trên trình duyệt của bạn, không lưu lên máy chủ.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Submit Action -->
+                <div class="pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500 shrink-0"></i>
+                        <span>Hỗ trợ chuẩn cấu trúc phản hồi <code class="font-mono">{ "data": [...] }</code> của OpenAI</span>
+                    </div>
+
+                    <button type="submit" id="fetchBtn"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium text-sm shadow-sm shadow-emerald-600/20 transition disabled:opacity-60 disabled:cursor-not-allowed">
+                        <i data-lucide="download-cloud" id="fetchBtnIcon" class="w-4 h-4"></i>
+                        <svg id="fetchSpinner" class="animate-spin h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="fetchBtnText">Lấy danh sách Models</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Thông báo lỗi chi tiết (Ẩn mặc định) -->
+        <div id="errorBox" class="hidden rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 p-4 sm:p-5 text-rose-800 dark:text-rose-200">
+            <div class="flex items-start gap-3">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"></i>
+                <div class="space-y-1.5 flex-1 min-w-0">
+                    <h3 id="errorTitle" class="font-semibold text-sm">Không thể kết nối tới API</h3>
+                    <p id="errorMessage" class="text-xs sm:text-sm text-rose-700 dark:text-rose-300 break-words"></p>
+                    <div id="errorHint" class="text-xs bg-white/60 dark:bg-slate-900/60 rounded-lg p-2.5 mt-2 border border-rose-200/60 dark:border-rose-800/40 text-slate-700 dark:text-slate-300 hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khu vực kết quả (Ẩn cho đến khi fetch thành công) -->
+        <section id="resultSection" class="hidden space-y-4">
+            
+            <!-- Toolbar: Thống kê + Các nút Tải xuống -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base" id="totalCountBadge">
+                        0
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-sm sm:text-base">Danh sách Models khả dụng</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" id="fetchMetaInfo">Đã tải xong dữ liệu từ endpoint</p>
+                    </div>
+                </div>
+
+                <!-- Nhóm nút hành động Lưu / Copy -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" id="downloadRawBtn"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium shadow-sm transition">
+                        <i data-lucide="file-json" class="w-4 h-4"></i>
+                        <span>Tải JSON gốc</span>
+                    </button>
+
+                    <button type="button" id="downloadFilteredJsonBtn"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium transition">
+                        <i data-lucide="filter" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+                        <span>Tải bản lọc (JSON)</span>
+                    </button>
+
+                    <button type="button" id="downloadTxtBtn"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium transition">
+                        <i data-lucide="file-text" class="w-4 h-4 text-sky-600 dark:text-sky-400"></i>
+                        <span>Tải list ID (.txt)</span>
+                    </button>
+
+                    <button type="button" id="copyAllJsonBtn"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium transition">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>Copy JSON</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thanh công cụ tìm kiếm & Chuyển chế độ xem -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <!-- Ô tìm kiếm -->
+                    <div class="relative flex-1 max-w-md">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </div>
+                        <input type="text" id="searchInput"
+                            placeholder="Tìm kiếm theo Model ID hoặc Owned By..."
+                            class="w-full pl-10 pr-9 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition">
+                        <button type="button" id="clearSearchBtn" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Tab chuyển chế độ xem -->
+                    <div class="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 self-start sm:self-auto">
+                        <button type="button" id="viewTableBtn"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm transition">
+                            <i data-lucide="table-2" class="w-3.5 h-3.5"></i>
+                            <span>Danh sách</span>
+                        </button>
+                        <button type="button" id="viewJsonBtn"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+                            <i data-lucide="code-2" class="w-3.5 h-3.5"></i>
+                            <span>Raw JSON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chế độ xem 1: Bảng trực quan -->
+                <div id="tableViewContainer" class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                <th class="py-3 px-4 w-12 text-center">#</th>
+                                <th class="py-3 px-4">Model ID</th>
+                                <th class="py-3 px-4">Owned By</th>
+                                <th class="py-3 px-4">Object</th>
+                                <th class="py-3 px-4">Ngày tạo (Created)</th>
+                                <th class="py-3 px-4 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modelsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/80 text-sm">
+                            <!-- Dữ liệu render bằng JS -->
+                        </tbody>
+                    </table>
+
+                    <!-- Empty state khi lọc không ra kết quả -->
+                    <div id="emptyFilterState" class="hidden py-12 px-4 text-center">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="search-x" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">Không tìm thấy model nào phù hợp</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Thử thay đổi từ khóa tìm kiếm của bạn.</p>
+                    </div>
+                </div>
+
+                <!-- Chế độ xem 2: Raw JSON -->
+                <div id="jsonViewContainer" class="hidden">
+                    <div class="bg-slate-950 text-slate-100 p-4 sm:p-5 overflow-x-auto max-h-[550px]">
+                        <pre id="rawJsonOutput" class="font-mono text-xs sm:text-sm leading-relaxed"></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 dark:border-slate-800 py-5 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-6xl mx-auto px-4">
+            Công cụ hỗ trợ kiểm tra & trích xuất dữ liệu API chuẩn OpenAI • Chạy 100% phía Client
+        </div>
+    </footer>
+
+    <!-- Toast Notification (Thay thế cho alert) -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-sm font-medium shadow-lg border border-slate-700/60">
+            <i data-lucide="check-circle-2" id="toastIcon" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+            <span id="toastMessage">Đã sao chép vào clipboard!</span>
+        </div>
+    </div>
+
+    <script>
+        // Khởi tạo icons Lucide
+        lucide.createIcons();
+
+        // Quản lý trạng thái ứng dụng
+        const state = {
+            rawResponse: null,      // Toàn bộ object JSON gốc trả về từ API
+            models: [],             // Mảng danh sách models trích xuất được
+            filteredModels: [],     // Mảng models sau khi lọc tìm kiếm
+            viewMode: 'table',      // 'table' hoặc 'json'
+            lastFetchedUrl: ''
+        };
+
+        // DOM Elements
+        const els = {
+            themeToggle: document.getElementById('themeToggle'),
+            fetchForm: document.getElementById('fetchForm'),
+            baseUrl: document.getElementById('baseUrl'),
+            previewEndpoint: document.getElementById('previewEndpoint'),
+            apiKey: document.getElementById('apiKey'),
+            toggleKeyBtn: document.getElementById('toggleKeyBtn'),
+            eyeIcon: document.getElementById('eyeIcon'),
+            fetchBtn: document.getElementById('fetchBtn'),
+            fetchBtnIcon: document.getElementById('fetchBtnIcon'),
+            fetchSpinner: document.getElementById('fetchSpinner'),
+            fetchBtnText: document.getElementById('fetchBtnText'),
+            presetBtns: document.querySelectorAll('.preset-btn'),
+
+            errorBox: document.getElementById('errorBox'),
+            errorTitle: document.getElementById('errorTitle'),
+            errorMessage: document.getElementById('errorMessage'),
+            errorHint: document.getElementById('errorHint'),
+
+            resultSection: document.getElementById('resultSection'),
+            totalCountBadge: document.getElementById('totalCountBadge'),
+            fetchMetaInfo: document.getElementById('fetchMetaInfo'),
+
+            downloadRawBtn: document.getElementById('downloadRawBtn'),
+            downloadFilteredJsonBtn: document.getElementById('downloadFilteredJsonBtn'),
+            downloadTxtBtn: document.getElementById('downloadTxtBtn'),
+            copyAllJsonBtn: document.getElementById('copyAllJsonBtn'),
+
+            searchInput: document.getElementById('searchInput'),
+            clearSearchBtn: document.getElementById('clearSearchBtn'),
+            viewTableBtn: document.getElementById('viewTableBtn'),
+            viewJsonBtn: document.getElementById('viewJsonBtn'),
+
+            tableViewContainer: document.getElementById('tableViewContainer'),
+            modelsTableBody: document.getElementById('modelsTableBody'),
+            emptyFilterState: document.getElementById('emptyFilterState'),
+
+            jsonViewContainer: document.getElementById('jsonViewContainer'),
+            rawJsonOutput: document.getElementById('rawJsonOutput'),
+
+            toast: document.getElementById('toast'),
+            toastMessage: document.getElementById('toastMessage')
+        };
+
+        // ==========================================
+        // 1. QUẢN LÝ THEME (DARK / LIGHT MODE)
+        // ==========================================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        els.themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        initTheme();
+
+        // ==========================================
+        // 2. TIỆN ÍCH THÔNG BÁO (TOAST) & COPY
+        // ==========================================
+        let toastTimeout;
+        function showToast(message) {
+            els.toastMessage.textContent = message;
+            els.toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                els.toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 2600);
+        }
+
+        // Copy text sử dụng execCommand để đảm bảo hoạt động ổn định trong mọi môi trường iframe
+        function copyToClipboard(text, successMsg = 'Đã sao chép vào clipboard!') {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if (successful) {
+                    showToast(successMsg);
+                } else {
+                    showToast('Không thể sao chép tự động.');
+                }
+            } catch (err) {
+                console.error('Lỗi copy:', err);
+                showToast('Lỗi khi sao chép dữ liệu.');
+            }
+        }
+
+        // ==========================================
+        // 3. XỬ LÝ FORM & ENDPOINT URL
+        // ==========================================
+        function buildModelsEndpoint(rawUrl) {
+            let cleanUrl = rawUrl.trim().replace(/\/+$/, ''); // Xóa dấu / ở cuối
+            if (cleanUrl.endsWith('/models')) {
+                return cleanUrl;
+            }
+            return `${cleanUrl}/models`;
+        }
+
+        function updateEndpointPreview() {
+            const val = els.baseUrl.value.trim();
+            els.previewEndpoint.textContent = val ? buildModelsEndpoint(val) : '.../models';
+        }
+
+        els.baseUrl.addEventListener('input', updateEndpointPreview);
+
+        // Xử lý click các nút Preset
+        els.presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const url = btn.getAttribute('data-url');
+                els.baseUrl.value = url;
+                updateEndpointPreview();
+
+                // Highlight nút đang chọn
+                els.presetBtns.forEach(b => b.classList.remove('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400', 'bg-emerald-50/50', 'dark:bg-emerald-950/30'));
+                btn.classList.add('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400', 'bg-emerald-50/50', 'dark:bg-emerald-950/30');
+            });
+        });
+
+        // Ẩn/Hiện API Key
+        els.toggleKeyBtn.addEventListener('click', () => {
+            const isPassword = els.apiKey.type === 'password';
+            els.apiKey.type = isPassword ? 'text' : 'password';
+            els.eyeIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+            lucide.createIcons();
+        });
+
+        // ==========================================
+        // 4. FETCH DỮ LIỆU TỪ API
+        // ==========================================
+        function setLoading(isLoading) {
+            els.fetchBtn.disabled = isLoading;
+            if (isLoading) {
+                els.fetchBtnIcon.classList.add('hidden');
+                els.fetchSpinner.classList.remove('hidden');
+                els.fetchBtnText.textContent = 'Đang lấy dữ liệu...';
+            } else {
+                els.fetchBtnIcon.classList.remove('hidden');
+                els.fetchSpinner.classList.add('hidden');
+                els.fetchBtnText.textContent = 'Lấy danh sách Models';
+            }
+        }
+
+        function showError(title, message, hint = '') {
+            els.errorTitle.textContent = title;
+            els.errorMessage.textContent = message;
+            if (hint) {
+                els.errorHint.innerHTML = hint;
+                els.errorHint.classList.remove('hidden');
+            } else {
+                els.errorHint.classList.add('hidden');
+            }
+            els.errorBox.classList.remove('hidden');
+            els.resultSection.classList.add('hidden');
+        }
+
+        function hideError() {
+            els.errorBox.classList.add('hidden');
+        }
+
+        els.fetchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError();
+
+            const rawBaseUrl = els.baseUrl.value.trim();
+            if (!rawBaseUrl) return;
+
+            const endpoint = buildModelsEndpoint(rawBaseUrl);
+            const apiKey = els.apiKey.value.trim();
+
+            const headers = {
+                'Accept': 'application/json'
+            };
+            if (apiKey) {
+                headers['Authorization'] = `Bearer ${apiKey}`;
+            }
+
+            setLoading(true);
+
+            try {
+                const startTime = performance.now();
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: headers
+                });
+                const duration = Math.round(performance.now() - startTime);
+
+                // Đọc text trước để tránh lỗi parse JSON nếu server trả về HTML/text lỗi
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseErr) {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} ${response.statusText}: ${responseText.slice(0, 200)}`);
+                    }
+                    throw new Error('Phản hồi từ server không phải định dạng JSON hợp lệ.');
+                }
+
+                if (!response.ok) {
+                    const apiErrMsg = data?.error?.message || data?.message || JSON.stringify(data);
+                    let hint = '';
+                    if (response.status === 401) {
+                        hint = '<strong>Gợi ý:</strong> API Key không chính xác, đã hết hạn hoặc bị thiếu. Vui lòng kiểm tra lại.';
+                    } else if (response.status === 404) {
+                        hint = '<strong>Gợi ý:</strong> Đường dẫn endpoint không tồn tại. Hãy chắc chắn Base URL có chứa <code>/v1</code> (ví dụ: <code>https://api.openai.com/v1</code>).';
+                    }
+                    showError(`Lỗi HTTP ${response.status} (${response.statusText})`, apiErrMsg, hint);
+                    return;
+                }
+
+                // Trích xuất danh sách models (Hỗ trợ chuẩn OpenAI { data: [...] } hoặc mảng trực tiếp [...])
+                let extractedModels = [];
+                if (Array.isArray(data)) {
+                    extractedModels = data;
+                } else if (data && Array.isArray(data.data)) {
+                    extractedModels = data.data;
+                } else if (data && Array.isArray(data.models)) {
+                    extractedModels = data.models;
+                } else {
+                    throw new Error('Dữ liệu JSON trả về không chứa mảng "data" theo chuẩn OpenAI.');
+                }
+
+                // Lưu vào state
+                state.rawResponse = data;
+                state.models = extractedModels;
+                state.filteredModels = [...extractedModels];
+                state.lastFetchedUrl = endpoint;
+
+                // Reset ô tìm kiếm
+                els.searchInput.value = '';
+                els.clearSearchBtn.classList.add('hidden');
+
+                // Cập nhật UI
+                els.fetchMetaInfo.textContent = `Nguồn: ${endpoint} • Thời gian phản hồi: ${duration}ms`;
+                renderResults();
+                els.resultSection.classList.remove('hidden');
+                showToast(`Đã tải thành công ${extractedModels.length} models!`);
+
+            } catch (err) {
+                console.error('Fetch error:', err);
+                let title = 'Lỗi kết nối tới API';
+                let message = err.message || 'Đã xảy ra lỗi không xác định.';
+                let hint = '';
+
+                // Nhận diện lỗi CORS hoặc Network Error phổ biến trên trình duyệt
+                if (err instanceof TypeError && (message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('Load failed'))) {
+                    title = 'Lỗi Mạng hoặc Chặn CORS (Cross-Origin)';
+                    message = `Trình duyệt bị chặn khi gọi tới ${endpoint}.`;
+                    hint = `
+                        <p class="font-medium mb-1">Nguyên nhân thường gặp:</p>
+                        <ul class="list-disc list-inside space-y-0.5">
+                            <li><strong>Dùng Local (Ollama / LM Studio):</strong> Máy chủ chưa bật cấu hình cho phép truy cập từ trình duyệt (ví dụ Ollama cần biến môi trường <code>OLLAMA_ORIGINS="*"</code>).</li>
+                            <li><strong>Sai địa chỉ / Cổng:</strong> Dịch vụ local chưa được khởi động hoặc sai port.</li>
+                            <li><strong>API bên thứ 3:</strong> Nhà cung cấp không cho phép gọi trực tiếp từ trình duyệt (CORS policy).</li>
+                        </ul>
+                    `;
+                }
+                showError(title, message, hint);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // ==========================================
+        // 5. HIỂN THỊ DỮ LIỆU (TABLE & RAW JSON)
+        // ==========================================
+        function formatUnixDate(timestamp) {
+            if (!timestamp || typeof timestamp !== 'number') return '—';
+            // Nếu timestamp tính bằng giây (chuẩn OpenAI), nhân 1000
+            const ms = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+            const date = new Date(ms);
+            if (isNaN(date.getTime())) return '—';
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Syntax highlight đơn giản cho JSON
+        function syntaxHighlightJson(jsonObj) {
+            const jsonStr = JSON.stringify(jsonObj, null, 2);
+            return escapeHtml(jsonStr).replace(
+                /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+                function (match) {
+                    let cls = 'text-amber-300'; // number
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'text-sky-400 font-medium'; // key
+                        } else {
+                            cls = 'text-emerald-300'; // string
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'text-purple-400'; // boolean
+                    } else if (/null/.test(match)) {
+                        cls = 'text-slate-400'; // null
+                    }
+                    return `<span class="${cls}">${match}</span>`;
+                }
+            );
+        }
+
+        function renderResults() {
+            const list = state.filteredModels;
+            els.totalCountBadge.textContent = list.length === state.models.length
+                ? state.models.length
+                : `${list.length}/${state.models.length}`;
+
+            // Render Bảng
+            if (list.length === 0) {
+                els.modelsTableBody.innerHTML = '';
+                els.emptyFilterState.classList.remove('hidden');
+            } else {
+                els.emptyFilterState.classList.add('hidden');
+                els.modelsTableBody.innerHTML = list.map((item, idx) => {
+                    const id = typeof item === 'string' ? item : (item.id || item.name || 'unknown');
+                    const ownedBy = item.owned_by || item.provider || '—';
+                    const objType = item.object || 'model';
+                    const created = formatUnixDate(item.created);
+
+                    return `
+                        <tr class="hover:bg-slate-50/90 dark:hover:bg-slate-800/40 transition group">
+                            <td class="py-3 px-4 text-center text-xs text-slate-400 font-mono">${idx + 1}</td>
+                            <td class="py-3 px-4 font-mono text-xs sm:text-sm font-medium text-slate-900 dark:text-slate-100 break-all">
+                                ${escapeHtml(id)}
+                            </td>
+                            <td class="py-3 px-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                    ${escapeHtml(ownedBy)}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 font-mono text-xs text-slate-500 dark:text-slate-400">${escapeHtml(objType)}</td>
+                            <td class="py-3 px-4 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">${created}</td>
+                            <td class="py-3 px-4 text-right whitespace-nowrap">
+                                <button type="button" onclick="copyModelId('${escapeHtml(id).replace(/'/g, "\\'")}')"
+                                    title="Sao chép Model ID"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800/60 transition">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Copy ID</span>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                lucide.createIcons();
+            }
+
+            // Render Raw JSON (hiển thị JSON gốc đầy đủ)
+            if (state.rawResponse) {
+                els.rawJsonOutput.innerHTML = syntaxHighlightJson(state.rawResponse);
+            }
+        }
+
+        // Hàm global cho nút Copy ID từng dòng
+        window.copyModelId = function(id) {
+            copyToClipboard(id, `Đã sao chép: ${id}`);
+        };
+
+        // ==========================================
+        // 6. TÌM KIẾM & CHUYỂN CHẾ ĐỘ XEM
+        // ==========================================
+        els.searchInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.trim().toLowerCase();
+            if (keyword) {
+                els.clearSearchBtn.classList.remove('hidden');
+                state.filteredModels = state.models.filter(item => {
+                    const id = (typeof item === 'string' ? item : (item.id || item.name || '')).toLowerCase();
+                    const owner = (item.owned_by || item.provider || '').toLowerCase();
+                    return id.includes(keyword) || owner.includes(keyword);
+                });
+            } else {
+                els.clearSearchBtn.classList.add('hidden');
+                state.filteredModels = [...state.models];
+            }
+            renderResults();
+        });
+
+        els.clearSearchBtn.addEventListener('click', () => {
+            els.searchInput.value = '';
+            els.clearSearchBtn.classList.add('hidden');
+            state.filteredModels = [...state.models];
+            renderResults();
+            els.searchInput.focus();
+        });
+
+        function switchViewMode(mode) {
+            state.viewMode = mode;
+            const activeClasses = ['bg-white', 'dark:bg-slate-900', 'text-slate-900', 'dark:text-white', 'shadow-sm'];
+            const inactiveClasses = ['text-slate-600', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-white'];
+
+            if (mode === 'table') {
+                els.viewTableBtn.classList.add(...activeClasses);
+                els.viewTableBtn.classList.remove(...inactiveClasses);
+                els.viewJsonBtn.classList.remove(...activeClasses);
+                els.viewJsonBtn.classList.add(...inactiveClasses);
+
+                els.tableViewContainer.classList.remove('hidden');
+                els.jsonViewContainer.classList.add('hidden');
+            } else {
+                els.viewJsonBtn.classList.add(...activeClasses);
+                els.viewJsonBtn.classList.remove(...inactiveClasses);
+                els.viewTableBtn.classList.remove(...activeClasses);
+                els.viewTableBtn.classList.add(...inactiveClasses);
+
+                els.jsonViewContainer.classList.remove('hidden');
+                els.tableViewContainer.classList.add('hidden');
+            }
+        }
+
+        els.viewTableBtn.addEventListener('click', () => switchViewMode('table'));
+        els.viewJsonBtn.addEventListener('click', () => switchViewMode('json'));
+
+        // ==========================================
+        // 7. LƯU FILE (JSON GỐC, JSON LỌC, TXT) & COPY
+        // ==========================================
+        function triggerDownload(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Đang tải xuống file: ${filename}`);
+        }
+
+        function getHostnameSlug() {
+            try {
+                const urlObj = new URL(state.lastFetchedUrl);
+                return urlObj.hostname.replace(/[^a-z0-9]/gi, '_');
+            } catch {
+                return 'api';
+            }
+        }
+
+        // Tải file JSON gốc từ /v1/models
+        els.downloadRawBtn.addEventListener('click', () => {
+            if (!state.rawResponse) return;
+            const jsonStr = JSON.stringify(state.rawResponse, null, 2);
+            const filename = `models_raw_${getHostnameSlug()}.json`;
+            triggerDownload(jsonStr, filename, 'application/json;charset=utf-8');
+        });
+
+        // Tải file JSON danh sách đã lọc (giữ cấu trúc chuẩn OpenAI)
+        els.downloadFilteredJsonBtn.addEventListener('click', () => {
+            if (!state.rawResponse) return;
+            const filteredPayload = {
+                object: state.rawResponse.object || 'list',
+                data: state.filteredModels
+            };
+            const jsonStr = JSON.stringify(filteredPayload, null, 2);
+            const filename = `models_filtered_${getHostnameSlug()}.json`;
+            triggerDownload(jsonStr, filename, 'application/json;charset=utf-8');
+        });
+
+        // Tải danh sách Model ID dưới dạng .txt (mỗi dòng 1 ID)
+        els.downloadTxtBtn.addEventListener('click', () => {
+            if (!state.filteredModels.length) {
+                showToast('Không có model nào để xuất file.');
+                return;
+            }
+            const lines = state.filteredModels.map(item =>
+                typeof item === 'string' ? item : (item.id || item.name || '')
+            ).filter(Boolean);
+            const filename = `model_ids_${getHostnameSlug()}.txt`;
+            triggerDownload(lines.join('\n'), filename, 'text/plain;charset=utf-8');
+        });
+
+        // Copy toàn bộ JSON gốc
+        els.copyAllJsonBtn.addEventListener('click', () => {
+            if (!state.rawResponse) return;
+            const jsonStr = JSON.stringify(state.rawResponse, null, 2);
+            copyToClipboard(jsonStr, 'Đã sao chép toàn bộ JSON vào clipboard!');
+        });
+    </script>
+</body>
+</html>
